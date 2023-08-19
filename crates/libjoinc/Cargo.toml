@@ -1,0 +1,11 @@
+[package]
+name = "libjoinc"
+version = "0.1.0"
+edition = "2021"
+authors = ["vmc <vmc.coding@gmail.com>"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+
+[dependencies]
+md5 = "0.7.0"
+quick-xml = "0.29.0"
