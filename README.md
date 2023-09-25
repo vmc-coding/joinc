@@ -30,6 +30,7 @@ As rust builds statically linked binaries, there aren't any known runtime depend
 - get the source of joinc, e.g. by cloning the repo
     ```shell script
     $ git clone https://github.com/vmc-coding/joinc.git joinc
+    $ cd joinc
     ```
 - compile it with cargo
     ```shell script

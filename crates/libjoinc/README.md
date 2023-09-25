@@ -1,6 +1,6 @@
 # libjoinc
 
-The core library of project join, implementing the communication with the BOINC clients by abstracting it through [commands](https://en.wikipedia.org/wiki/Command_pattern).
+The core library of project joinc, implementing the communication with the BOINC clients by abstracting it through [commands](https://en.wikipedia.org/wiki/Command_pattern).
 
 ## dependencies
 
