@@ -10,6 +10,8 @@ pub enum Error {
     IllegalState,
     Io,
     Message(String),
+    NonDeserializeableXML,
+    NonSerializeableXML,
 }
 
 impl ser::Error for Error {
