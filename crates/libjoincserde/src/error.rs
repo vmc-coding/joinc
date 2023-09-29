@@ -8,7 +8,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug)]
 pub enum Error {
     IllegalState,
-    Io,
+    Io(std::io::Error),
     Message(String),
     NonDeserializeableXML,
     NonSerializeableXML,
@@ -36,3 +36,9 @@ impl Display for Error {
 }
 
 impl std::error::Error for Error {}
+
+impl From<std::io::Error> for Error {
+    fn from(err: std::io::Error) -> Error {
+        Error::Io(err)
+    }
+}

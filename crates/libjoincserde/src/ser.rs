@@ -25,7 +25,7 @@ where
         // closing root element
         if !self.tags.is_empty() {
             let tag = self.tags.pop().ok_or(Error::IllegalState)?;
-            self.formatter.render_closing_struct_tag(&mut self.writer, tag).map_err(|_| Error::Io)?;
+            self.formatter.render_closing_struct_tag(&mut self.writer, tag).map_err(Error::Io)?;
         }
 
         Ok(())
@@ -138,9 +138,9 @@ where
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<()> {
-        self.formatter.render_opening_field_tag(&mut self.writer, self.tags.last().ok_or(Error::IllegalState)?).map_err(|_| Error::Io)?;
-        self.formatter.render_field_value(&mut self.writer, v).map_err(|_| Error::Io)?;
-        self.formatter.render_closing_field_tag(&mut self.writer, self.tags.last().ok_or(Error::IllegalState)?).map_err(|_| Error::Io)
+        self.formatter.render_opening_field_tag(&mut self.writer, self.tags.last().ok_or(Error::IllegalState)?).map_err(Error::Io)?;
+        self.formatter.render_field_value(&mut self.writer, v).map_err(Error::Io)?;
+        self.formatter.render_closing_field_tag(&mut self.writer, self.tags.last().ok_or(Error::IllegalState)?).map_err(Error::Io)
     }
 
     fn serialize_none(self) -> Result<()> {
@@ -223,7 +223,7 @@ where
 
     fn serialize_struct(self, name: &'static str, _len: usize) -> Result<Self::SerializeStruct> {
         self.tags.push(name);
-        self.formatter.render_opening_struct_tag(&mut self.writer, name).map_err(|_| Error::Io)?;
+        self.formatter.render_opening_struct_tag(&mut self.writer, name).map_err(Error::Io)?;
         Ok(self)
     }
 
@@ -365,7 +365,7 @@ where
 
     fn end(self) -> Result<()> {
         let tag = self.tags.pop().ok_or(Error::IllegalState)?;
-        self.formatter.render_closing_struct_tag(&mut self.writer, tag).map_err(|_| Error::Io)
+        self.formatter.render_closing_struct_tag(&mut self.writer, tag).map_err(Error::Io)
     }
 }
 
