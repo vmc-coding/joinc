@@ -650,7 +650,7 @@ mod tests {
             inner: InnerDTO { b: -11 },
         };
 
-        // yep, I know, it has a redudant newline
+        // yep, I know, it has a redundant newline
         let expected ="\
 <outer>
   <a>47</a>
