@@ -2,7 +2,7 @@
 
 joinc implements frontends to [BOINC](https://boinc.berkeley.edu/) clients.
 
-The core of joinc implements the GUI RPC protocol with the BOINC clients.
+The core of joinc implements the [GUI RPC protocol](https://boinc.berkeley.edu/trac/wiki/GuiRpcProtocol).
 On top of this a CLI is provided.
 A GUI and/or web API is subject for the future.
 
