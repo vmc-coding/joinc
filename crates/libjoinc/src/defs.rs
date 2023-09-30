@@ -8,7 +8,7 @@ pub enum MsgInfo {
     UserAlert,
     InternalError,
     #[serde(other)]
-    UnknownToWoinc = -1,
+    UnknownToJoinc = -1,
 }
 
 impl Display for MsgInfo {
@@ -17,7 +17,7 @@ impl Display for MsgInfo {
             MsgInfo::Info => "low",
             MsgInfo::UserAlert => "user notification",
             MsgInfo::InternalError => "internal error",
-            MsgInfo::UnknownToWoinc => "unknown",
+            MsgInfo::UnknownToJoinc => "unknown",
         })
     }
 }
