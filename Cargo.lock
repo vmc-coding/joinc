@@ -172,8 +172,8 @@ checksum = "b4668fb0ea861c1df094127ac5f1da3409a82116a4ba74fca2e58ef927159bb3"
 name = "libjoinc"
 version = "0.1.0"
 dependencies = [
+ "libjoincserde",
  "md5",
- "quick-xml",
  "serde",
 ]
 

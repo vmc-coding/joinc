@@ -66,16 +66,13 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
     match command {
         CliCommand::ClientVersion => {
             let mut cmd = ExchangeVersionsCommand::default();
-            cmd.execute(connection)?;
-            let version = cmd
-                .version
-                .expect("Response should be valid as the command succeeded");
+            let version = cmd.execute(connection)?;
             println!(
                 "Client version: {}.{}.{}",
                 version.major, version.minor, version.release
             );
         }
-        CliCommand::ReadCcConfig => ReadCCConfigCommand::new().execute(connection)?,
+        CliCommand::ReadCcConfig => ReadCCConfigCommand::default().execute(connection)?,
         CliCommand::Version => panic!("Should've never reached this line"),
     };
 

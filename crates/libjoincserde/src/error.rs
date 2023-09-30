@@ -10,8 +10,7 @@ pub enum Error {
     IllegalState,
     Io(std::io::Error),
     Message(String),
-    NonDeserializeableXML,
-    NonSerializeableXML,
+    UnexpectedXml,
 }
 
 impl ser::Error for Error {
@@ -30,7 +29,8 @@ impl Display for Error {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Error::Message(msg) => formatter.write_str(msg),
-            _ => unimplemented!(),
+            // TODO implement this
+            _ => formatter.write_str(&format!("{:?}", self)),
         }
     }
 }

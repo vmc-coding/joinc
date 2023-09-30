@@ -1,11 +1,10 @@
 #[derive(Debug)]
 pub enum Error {
-    InvalidFormat,
-    InvalidXml(String),
+    Client(String),
+    Deserialization(libjoincserde::Error),
     Io(std::io::Error),
     Rpc(String),
     Unauthorized,
-    UnsupportedEncoding,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

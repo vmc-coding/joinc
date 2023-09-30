@@ -7,5 +7,6 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 
 [dependencies]
+libjoincserde = { version = "0.1.0", path = "../libjoincserde" }
 md5 = "0.7.0"
-quick-xml = "0.29.0"
+serde = { version = "1.0.188", features = ["derive"] }

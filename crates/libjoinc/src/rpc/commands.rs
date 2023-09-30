@@ -1,51 +1,95 @@
 use crate::error::{Error, Result};
-use crate::rpc::connection::{Connection, Operation};
-use crate::rpc::xml_serde::SerializeInto;
+use crate::rpc::connection::Connection;
 use crate::types::*;
-use crate::xml;
+use libjoincserde::{from_str, to_vec};
+use serde::{Deserialize, Serialize};
 
-pub trait Command {
-    fn execute(&mut self, connection: &mut Connection) -> Result<()>;
+pub trait Command<RESP> {
+    fn execute(&mut self, connection: &mut Connection) -> Result<RESP>;
+}
 
-    fn needs_authorization(&self) -> bool {
-        false
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct UnauthorizedReply {
+    #[serde(rename = "unauthorized")]
+    _unauthorized: String,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ErrorReply {
+    error: String,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct SuccessReply {
+    #[serde(rename = "success")]
+    _success: String,
+}
+
+fn execute_rpc_operation<REQ, RESP>(connection: &mut Connection, request: &REQ) -> Result<RESP>
+where
+    REQ: Serialize,
+    RESP: for<'de> Deserialize<'de>,
+{
+    let raw_response = connection.do_rpc(&to_vec(request).map_err(Error::Deserialization)?)?;
+    // the root tag is a workaround for proper expected tag matching during deserialization
+    let response = "<root>".to_string()
+        + &String::from_utf8(raw_response)
+            .map_err(|_| Error::Rpc("Recieved a non-UTF8 response from the client".to_string()))?
+        + "</root>";
+
+    match from_str(&response) {
+        Ok(deserialized) => Ok(deserialized),
+        Err(de_err) => match from_str::<ErrorReply>(&response) {
+            Ok(error) => Err(Error::Client(error.error)),
+            _ => match from_str::<UnauthorizedReply>(&response) {
+                Ok(_) => Err(Error::Unauthorized),
+                _ => Err(Error::Deserialization(de_err)),
+            },
+        },
     }
 }
 
 // ----- AuthorizeCommand -----
 
-#[derive(Default)]
+#[derive(Default, Deserialize, Serialize)]
+#[serde(rename(serialize = "auth1"))]
 struct Auth1Operation {
-    nonce: Option<String>,
-}
-
-impl Operation for Auth1Operation {
-    fn serialize(&self) -> xml::Node {
-        xml::Node::new("auth1")
-    }
-
-    fn deserialize(&mut self, root: xml::Node) -> Result<()> {
-        self.nonce = Some(root.try_child_into_content("nonce")?);
-        Ok(())
-    }
-}
-
-struct Auth2Operation {
-    password: String,
+    #[serde(skip_serializing)]
     nonce: String,
 }
 
-impl Operation for Auth2Operation {
-    fn serialize(&self) -> xml::Node {
-        let hash = md5::compute((self.nonce.to_owned() + &self.password).as_bytes());
-
-        let mut node = xml::Node::new("auth2");
-        node.add_new_content_child("nonce_hash", format!("{:x}", hash));
-        node
+impl Command<String> for Auth1Operation {
+    fn execute(&mut self, connection: &mut Connection) -> Result<String> {
+        let response: Auth1Operation = execute_rpc_operation(connection, self)?;
+        Ok(response.nonce)
     }
+}
 
-    fn deserialize(&mut self, root: xml::Node) -> Result<()> {
-        assert_child_exists(&root, "authorized")
+#[derive(Default, Deserialize, Serialize)]
+#[serde(rename(serialize = "auth2"))]
+struct Auth2Operation {
+    #[serde(skip_serializing)]
+    authorized: Option<String>,
+    #[serde(skip_deserializing)]
+    nonce_hash: String,
+}
+
+impl Auth2Operation {
+    fn new(password: &str, nonce: &str) -> Self {
+        Self {
+            authorized: None,
+            nonce_hash: format!("{:x}", md5::compute(nonce.to_owned() + password)),
+        }
+    }
+}
+
+impl Command<bool> for Auth2Operation {
+    fn execute(&mut self, connection: &mut Connection) -> Result<bool> {
+        let response: Auth2Operation = execute_rpc_operation(connection, self)?;
+        Ok(response.authorized.is_some())
     }
 }
 
@@ -54,66 +98,56 @@ pub struct AuthorizeCommand {
 }
 
 impl AuthorizeCommand {
-    pub fn new<T: Into<String>>(password: T) -> Self {
+    pub fn new<T>(password: T) -> Self
+    where
+        T: Into<String>,
+    {
         AuthorizeCommand {
             password: password.into(),
         }
     }
 }
 
-impl Command for AuthorizeCommand {
+impl Command<()> for AuthorizeCommand {
     fn execute(&mut self, connection: &mut Connection) -> Result<()> {
         let mut auth1 = Auth1Operation::default();
-        connection.do_rpc_operation(&mut auth1)?;
+        let nonce = auth1.execute(connection)?;
 
-        let mut auth2 = Auth2Operation {
-            password: self.password.clone(),
-            nonce: auth1.nonce.ok_or(Error::Rpc(
-                "The nonce for authorization is missing".to_string(),
-            ))?,
-        };
-        connection.do_rpc_operation(&mut auth2)
+        let mut auth2 = Auth2Operation::new(&self.password, &nonce);
+        if auth2.execute(connection)? {
+            Ok(())
+        } else {
+            Err(Error::Unauthorized)
+        }
     }
 }
 
 // ----- ExchangeVersionsCommand -----
 
-#[derive(Default)]
+#[derive(Default, Deserialize, Serialize)]
+#[serde(rename(serialize = "exchange_versions"))]
 pub struct ExchangeVersionsCommand {
-    request: Version,
-    pub version: Option<Version>,
+    #[serde(rename(deserialize = "server_version"))]
+    version: Version,
 }
 
 impl ExchangeVersionsCommand {
-    pub fn new(request: Version) -> Self {
-        Self {
-            request,
-            version: None,
-        }
+    pub fn new(version: Version) -> Self {
+        Self { version }
     }
 }
 
-impl Command for ExchangeVersionsCommand {
-    fn execute(&mut self, connection: &mut Connection) -> Result<()> {
-        connection.do_rpc_operation(self)
-    }
-}
-
-impl Operation for ExchangeVersionsCommand {
-    fn serialize(&self) -> xml::Node {
-        let node = xml::Node::new("exchange_versions");
-        self.request.serialize_into(node)
-    }
-
-    fn deserialize(&mut self, root: xml::Node) -> Result<()> {
-        let version_node = need_child(&root, "server_version")?;
-        self.version = Some(version_node.try_into()?);
-        Ok(())
+impl Command<Version> for ExchangeVersionsCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<Version> {
+        let response: Self = execute_rpc_operation(connection, self)?;
+        Ok(response.version)
     }
 }
 
 // ----- ReadCCConfigCommand -----
 
+#[derive(Default, Serialize)]
+#[serde(rename(serialize = "read_cc_config"))]
 pub struct ReadCCConfigCommand {}
 
 impl ReadCCConfigCommand {
@@ -122,35 +156,9 @@ impl ReadCCConfigCommand {
     }
 }
 
-impl Command for ReadCCConfigCommand {
+impl Command<()> for ReadCCConfigCommand {
     fn execute(&mut self, connection: &mut Connection) -> Result<()> {
-        connection.do_rpc_operation(self)
+        let _: SuccessReply = execute_rpc_operation(connection, self)?;
+        Ok(())
     }
-
-    fn needs_authorization(&self) -> bool {
-        true
-    }
-}
-
-impl Operation for ReadCCConfigCommand {
-    fn serialize(&self) -> xml::Node {
-        xml::Node::new("read_cc_config")
-    }
-
-    fn deserialize(&mut self, root: xml::Node) -> Result<()> {
-        assert_child_exists(&root, "success")
-    }
-}
-
-// ----- some helper function -----
-
-fn assert_child_exists(node: &xml::Node, tag: &str) -> Result<()> {
-    node.find_child(tag)
-        .map(|_| ())
-        .ok_or(Error::Rpc(format!("Expected tag '{}' not found.", tag)))
-}
-
-fn need_child<'a, 'b>(node: &'a xml::Node, tag: &'b str) -> Result<&'a xml::Node> {
-    node.find_child(tag)
-        .ok_or(Error::Rpc(format!("Expected tag '{}' not found.", tag)))
 }

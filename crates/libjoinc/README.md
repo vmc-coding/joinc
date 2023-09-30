@@ -5,4 +5,4 @@ The core library of project joinc, implementing the communication with the BOINC
 ## dependencies
 
 - [md5](https://github.com/stainless-steel/md5)
-- [quick-xml](https://docs.rs/quick-xml/)
+- [libjoincserde](../libjoincserde)
