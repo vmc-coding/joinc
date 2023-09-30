@@ -144,6 +144,44 @@ impl Command<Version> for ExchangeVersionsCommand {
     }
 }
 
+// ----- GetMessagesCommand -----
+
+#[derive(Deserialize)]
+struct MessagesDto {
+    msg: Vec<Message>,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(rename(serialize = "get_messages"))]
+pub struct GetMessagesCommand {
+    #[serde(skip_deserializing)]
+    seqno: u32,
+    #[serde(skip_serializing)]
+    msgs: MessagesDto,
+}
+
+impl GetMessagesCommand {
+    pub fn new(seqno: u32) -> Self {
+        Self {
+            seqno,
+            msgs: MessagesDto { msg: vec![] },
+        }
+    }
+}
+
+impl std::default::Default for GetMessagesCommand {
+    fn default() -> Self {
+        GetMessagesCommand::new(0)
+    }
+}
+
+impl Command<Vec<Message>> for GetMessagesCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<Vec<Message>> {
+        let response: Self = execute_rpc_operation(connection, self)?;
+        Ok(response.msgs.msg)
+    }
+}
+
 // ----- ReadCCConfigCommand -----
 
 #[derive(Default, Serialize)]
