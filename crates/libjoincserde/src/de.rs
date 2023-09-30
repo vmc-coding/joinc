@@ -1,5 +1,5 @@
-use crate::Error;
 use crate::error::Result;
+use crate::Error;
 use serde::Deserialize;
 
 pub fn from_str<'a, T>(s: &'a str) -> Result<T>
@@ -48,7 +48,7 @@ mod tests {
         #[serde(rename = "success")]
         struct Success {}
 
-        let expected = Success{};
+        let expected = Success {};
 
         let xml = "<success></success>";
         let deserialized: Success = super::from_str(xml).unwrap();
@@ -62,14 +62,13 @@ mod tests {
         #[serde(rename = "success")]
         struct Success {}
 
-        let expected = Success{};
+        let expected = Success {};
 
         let xml = "<success/>";
         let deserialized: Success = super::from_str(xml).unwrap();
 
         assert_eq!(deserialized, expected);
     }
-
 
     #[test]
     fn deserializes_enums() {
@@ -133,8 +132,14 @@ mod tests {
 
         let expected = Msgs {
             msg: vec![
-                Msg { id: 2, body: "foo".to_string() },
-                Msg { id: 5, body: "bar".to_string() },
+                Msg {
+                    id: 2,
+                    body: "foo".to_string(),
+                },
+                Msg {
+                    id: 5,
+                    body: "bar".to_string(),
+                },
             ],
         };
 

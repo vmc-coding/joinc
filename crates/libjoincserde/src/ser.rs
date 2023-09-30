@@ -25,7 +25,9 @@ where
         // closing root element
         if !self.tags.is_empty() {
             let tag = self.tags.pop().ok_or(Error::IllegalState)?;
-            self.formatter.render_closing_struct_tag(&mut self.writer, tag).map_err(Error::Io)?;
+            self.formatter
+                .render_closing_struct_tag(&mut self.writer, tag)
+                .map_err(Error::Io)?;
         }
 
         Ok(())
@@ -63,7 +65,7 @@ where
     F: Formatter,
     T: Serialize,
 {
-    let mut buffer= Vec::with_capacity(256);
+    let mut buffer = Vec::with_capacity(256);
     to_writer_formatted(&mut buffer, formatter, value)?;
     Ok(buffer)
 }
@@ -73,7 +75,6 @@ where
     W: io::Write,
     F: Formatter,
 {
-
     type Ok = ();
     type Error = Error;
 
@@ -138,9 +139,21 @@ where
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<()> {
-        self.formatter.render_opening_field_tag(&mut self.writer, self.tags.last().ok_or(Error::IllegalState)?).map_err(Error::Io)?;
-        self.formatter.render_field_value(&mut self.writer, v).map_err(Error::Io)?;
-        self.formatter.render_closing_field_tag(&mut self.writer, self.tags.last().ok_or(Error::IllegalState)?).map_err(Error::Io)
+        self.formatter
+            .render_opening_field_tag(
+                &mut self.writer,
+                self.tags.last().ok_or(Error::IllegalState)?,
+            )
+            .map_err(Error::Io)?;
+        self.formatter
+            .render_field_value(&mut self.writer, v)
+            .map_err(Error::Io)?;
+        self.formatter
+            .render_closing_field_tag(
+                &mut self.writer,
+                self.tags.last().ok_or(Error::IllegalState)?,
+            )
+            .map_err(Error::Io)
     }
 
     fn serialize_none(self) -> Result<()> {
@@ -223,7 +236,9 @@ where
 
     fn serialize_struct(self, name: &'static str, _len: usize) -> Result<Self::SerializeStruct> {
         self.tags.push(name);
-        self.formatter.render_opening_struct_tag(&mut self.writer, name).map_err(Error::Io)?;
+        self.formatter
+            .render_opening_struct_tag(&mut self.writer, name)
+            .map_err(Error::Io)?;
         Ok(self)
     }
 
@@ -365,7 +380,9 @@ where
 
     fn end(self) -> Result<()> {
         let tag = self.tags.pop().ok_or(Error::IllegalState)?;
-        self.formatter.render_closing_struct_tag(&mut self.writer, tag).map_err(Error::Io)
+        self.formatter
+            .render_closing_struct_tag(&mut self.writer, tag)
+            .map_err(Error::Io)
     }
 }
 
@@ -394,7 +411,7 @@ where
 pub trait Formatter {
     fn render_opening_struct_tag<W>(&mut self, writer: &mut W, tag: &'static str) -> io::Result<()>
     where
-        W: io::Write
+        W: io::Write,
     {
         writer.write_all(b"<")?;
         writer.write_all(tag.as_bytes())?;
@@ -403,7 +420,7 @@ pub trait Formatter {
 
     fn render_closing_struct_tag<W>(&mut self, writer: &mut W, tag: &'static str) -> io::Result<()>
     where
-        W: io::Write
+        W: io::Write,
     {
         writer.write_all(b"</")?;
         writer.write_all(tag.as_bytes())?;
@@ -412,7 +429,7 @@ pub trait Formatter {
 
     fn render_opening_field_tag<W>(&mut self, writer: &mut W, tag: &'static str) -> io::Result<()>
     where
-        W: io::Write
+        W: io::Write,
     {
         writer.write_all(b"<")?;
         writer.write_all(tag.as_bytes())?;
@@ -421,7 +438,7 @@ pub trait Formatter {
 
     fn render_closing_field_tag<W>(&mut self, writer: &mut W, tag: &'static str) -> io::Result<()>
     where
-        W: io::Write
+        W: io::Write,
     {
         writer.write_all(b"</")?;
         writer.write_all(tag.as_bytes())?;
@@ -430,7 +447,7 @@ pub trait Formatter {
 
     fn render_field_value<W>(&mut self, writer: &mut W, v: &[u8]) -> io::Result<()>
     where
-        W: io::Write
+        W: io::Write,
     {
         writer.write_all(v)
     }
@@ -471,7 +488,7 @@ impl<'a> PrettyFormatter<'a> {
 
     fn render_indent<W>(&self, writer: &mut W) -> io::Result<()>
     where
-        W: io::Write
+        W: io::Write,
     {
         writer.write_all(&self.indent.repeat(self.indention_level))
     }
@@ -480,27 +497,29 @@ impl<'a> PrettyFormatter<'a> {
 impl<'a> Formatter for PrettyFormatter<'a> {
     fn render_opening_struct_tag<W>(&mut self, writer: &mut W, tag: &'static str) -> io::Result<()>
     where
-        W: io::Write
+        W: io::Write,
     {
         self.render_indent(writer)?;
         self.inc_indent();
-        self.default_formatter.render_opening_struct_tag(writer, tag)?;
+        self.default_formatter
+            .render_opening_struct_tag(writer, tag)?;
         writer.write_all(&self.nl)
     }
 
     fn render_closing_struct_tag<W>(&mut self, writer: &mut W, tag: &'static str) -> io::Result<()>
     where
-        W: io::Write
+        W: io::Write,
     {
         self.dec_indent();
         self.render_indent(writer)?;
-        self.default_formatter.render_closing_struct_tag(writer, tag)?;
+        self.default_formatter
+            .render_closing_struct_tag(writer, tag)?;
         writer.write_all(&self.nl)
     }
 
     fn render_opening_field_tag<W>(&mut self, writer: &mut W, tag: &'static str) -> io::Result<()>
     where
-        W: io::Write
+        W: io::Write,
     {
         self.render_indent(writer)?;
         self.default_formatter.render_opening_field_tag(writer, tag)
@@ -508,9 +527,10 @@ impl<'a> Formatter for PrettyFormatter<'a> {
 
     fn render_closing_field_tag<W>(&mut self, writer: &mut W, tag: &'static str) -> io::Result<()>
     where
-        W: io::Write
+        W: io::Write,
     {
-        self.default_formatter.render_closing_field_tag(writer, tag)?;
+        self.default_formatter
+            .render_closing_field_tag(writer, tag)?;
         writer.write_all(&self.nl)
     }
 }
@@ -543,7 +563,10 @@ mod tests {
         };
 
         let expected = "<outer><a>47</a><inner><b>-11</b></inner></outer>";
-        assert_eq!(String::from_utf8(super::to_vec(&test).unwrap()).unwrap(), expected);
+        assert_eq!(
+            String::from_utf8(super::to_vec(&test).unwrap()).unwrap(),
+            expected
+        );
     }
 
     #[test]
@@ -557,7 +580,10 @@ mod tests {
         // also valid would be <iam_empty/>, see https://boinc.berkeley.edu/trac/wiki/GuiRpcProtocol (Sep 2023):
         // "Self-closing tags must not have a space before the slash, [..]"
         let expected = "<iam_empty></iam_empty>";
-        assert_eq!(String::from_utf8(super::to_vec(&test).unwrap()).unwrap(), expected);
+        assert_eq!(
+            String::from_utf8(super::to_vec(&test).unwrap()).unwrap(),
+            expected
+        );
     }
 
     #[test]
@@ -582,8 +608,10 @@ mod tests {
         };
 
         let expected = "<dto><a_color>5</a_color><another_color>7</another_color></dto>";
-        assert_eq!(String::from_utf8(super::to_vec(&test).unwrap()).unwrap(), expected);
-
+        assert_eq!(
+            String::from_utf8(super::to_vec(&test).unwrap()).unwrap(),
+            expected
+        );
     }
 
     #[test]
@@ -599,7 +627,10 @@ mod tests {
         };
 
         let expected = "<dto><number>2</number><number>3</number><number>5</number></dto>";
-        assert_eq!(String::from_utf8(super::to_vec(&test).unwrap()).unwrap(), expected);
+        assert_eq!(
+            String::from_utf8(super::to_vec(&test).unwrap()).unwrap(),
+            expected
+        );
     }
 
     #[test]
@@ -619,13 +650,22 @@ mod tests {
 
         let test = Msgs {
             msg: vec![
-                Msg { id: 2, body: "foo".to_string() },
-                Msg { id: 5, body: "bar".to_string() },
+                Msg {
+                    id: 2,
+                    body: "foo".to_string(),
+                },
+                Msg {
+                    id: 5,
+                    body: "bar".to_string(),
+                },
             ],
         };
 
         let expected = "<msgs><msg><id>2</id><body>foo</body></msg><msg><id>5</id><body>bar</body></msg></msgs>";
-        assert_eq!(String::from_utf8(super::to_vec(&test).unwrap()).unwrap(), expected);
+        assert_eq!(
+            String::from_utf8(super::to_vec(&test).unwrap()).unwrap(),
+            expected
+        );
     }
 
     #[test]
@@ -651,7 +691,7 @@ mod tests {
         };
 
         // yep, I know, it has a redundant newline
-        let expected ="\
+        let expected = "\
 <outer>
   <a>47</a>
   <inner>
@@ -659,6 +699,12 @@ mod tests {
   </inner>
 </outer>
 ";
-        assert_eq!(String::from_utf8(super::to_vec_formatted(PrettyFormatter::with_indent(b"  "), &test).unwrap()).unwrap(), expected);
+        assert_eq!(
+            String::from_utf8(
+                super::to_vec_formatted(PrettyFormatter::with_indent(b"  "), &test).unwrap()
+            )
+            .unwrap(),
+            expected
+        );
     }
 }
