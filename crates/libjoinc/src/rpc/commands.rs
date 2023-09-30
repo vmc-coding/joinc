@@ -33,7 +33,7 @@ where
     REQ: Serialize,
     RESP: for<'de> Deserialize<'de>,
 {
-    let raw_response = connection.do_rpc(&to_vec(request).map_err(Error::Deserialization)?)?;
+    let raw_response = connection.do_rpc(&to_vec(request)?)?;
     // the root tag is a workaround for proper expected tag matching during deserialization
     let response = "<root>".to_string()
         + &String::from_utf8(raw_response)
