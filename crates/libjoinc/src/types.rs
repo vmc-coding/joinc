@@ -1,7 +1,7 @@
 use crate::defs::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct Message {
     pub body: String,
     #[serde(rename = "pri")]
@@ -12,19 +12,7 @@ pub struct Message {
     pub timestamp: i64,
 }
 
-impl std::default::Default for Message {
-    fn default() -> Self {
-        Self {
-            body: String::new(),
-            priority: MsgInfo::UnknownToWoinc,
-            project: String::new(),
-            seqno: 0,
-            timestamp: 0,
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename = "version")]
 pub struct Version {
     pub major: i32,

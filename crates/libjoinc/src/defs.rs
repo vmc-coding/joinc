@@ -1,7 +1,7 @@
 use serde_repr::Deserialize_repr;
 use std::fmt::{self, Display};
 
-#[derive(Debug, Deserialize_repr)]
+#[derive(Deserialize_repr)]
 #[repr(i8)]
 pub enum MsgInfo {
     Info = 1,
