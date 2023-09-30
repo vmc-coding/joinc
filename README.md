@@ -11,7 +11,9 @@ The project is work in progress and at the current state the API and/or CLI may 
 
 ## joinc consists of
 
-- **libjoinc**: The core library, implementing the communication with the BOINC clients by abstracting it through [commands](https://en.wikipedia.org/wiki/Command_pattern).
+- **libjoincserde**: The serde library implementing (de)serializing for the communication with the BOINC clients.
+- **libjoinc**: The core library implementing the communication with the BOINC clients by abstracting it through
+    [commands](https://en.wikipedia.org/wiki/Command_pattern).
 - **joinccmd**: The CLI to the BOINC clients.
 
 ## dependencies
