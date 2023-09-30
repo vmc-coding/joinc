@@ -3,6 +3,8 @@ use libjoinc::error::Result;
 use libjoinc::rpc::commands::*;
 use libjoinc::rpc::connection;
 
+use chrono::prelude::*;
+
 const JOINCCMD_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 #[derive(Parser)]
@@ -27,6 +29,12 @@ struct Cli {
 enum CliCommand {
     /// Show client version
     ClientVersion,
+    /// Show messages
+    GetMessages {
+        /// show messages with sequence number > seqno only
+        #[arg(default_value="0")]
+        seqno: u32,
+    },
     /// Read the cc_config.xml file
     ReadCcConfig,
     /// Show the verion of this cli
@@ -72,9 +80,36 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
                 version.major, version.minor, version.release
             );
         }
+        CliCommand::GetMessages{ seqno } => {
+            let mut cmd = GetMessagesCommand::new(seqno);
+            let msgs = cmd.execute(connection)?;
+            for msg in msgs {
+                println!(
+                    "{}: {} ({}) [{}] {}",
+                    msg.seqno,
+                    time_to_string(msg.timestamp),
+                    msg.priority,
+                    msg.project,
+                    msg.body.trim()
+                );
+            }
+        }
         CliCommand::ReadCcConfig => ReadCCConfigCommand::default().execute(connection)?,
         CliCommand::Version => panic!("Should've never reached this line"),
     };
 
     Ok(())
+}
+
+fn time_to_string(timestamp: i64) -> String {
+    Some(timestamp)
+        .filter(|&t| t > 0)
+        .and_then(|t| NaiveDateTime::from_timestamp_opt(t, 0))
+        .map(|t| {
+            Local
+                .from_utc_datetime(&t)
+                .with_timezone(&Local)
+                .to_string()
+        })
+        .unwrap_or("---".to_string())
 }
