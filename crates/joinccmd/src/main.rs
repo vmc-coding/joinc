@@ -32,7 +32,7 @@ enum CliCommand {
     /// Show messages
     GetMessages {
         /// show messages with sequence number > seqno only
-        #[arg(default_value="0")]
+        #[arg(default_value = "0")]
         seqno: u32,
     },
     /// Read the cc_config.xml file
@@ -80,7 +80,7 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
                 version.major, version.minor, version.release
             );
         }
-        CliCommand::GetMessages{ seqno } => {
+        CliCommand::GetMessages { seqno } => {
             let mut cmd = GetMessagesCommand::new(seqno);
             let msgs = cmd.execute(connection)?;
             for msg in msgs {
