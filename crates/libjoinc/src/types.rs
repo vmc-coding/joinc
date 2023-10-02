@@ -1,5 +1,6 @@
 use crate::defs::*;
 use serde::{Deserialize, Serialize};
+use std::fmt::{self, Display};
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
@@ -87,5 +88,11 @@ impl std::default::Default for Version {
             minor: 22,
             release: 0,
         }
+    }
+}
+
+impl Display for Version {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str(&format!("{}.{}.{}", self.major, self.minor, self.release))
     }
 }
