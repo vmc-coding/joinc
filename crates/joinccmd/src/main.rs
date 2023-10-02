@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use libjoinc::defs::*;
 use libjoinc::error::Result;
 use libjoinc::rpc::commands::*;
 use libjoinc::rpc::connection;
@@ -34,6 +35,10 @@ enum CliCommand {
         /// show messages with sequence number > seqno only
         #[arg(default_value = "0")]
         seqno: u32,
+    },
+    GetTasks {
+        #[arg(default_value = "false")]
+        active_only: bool,
     },
     /// Read the cc_config.xml file
     ReadCcConfig,
@@ -94,6 +99,107 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
                 );
             }
         }
+        CliCommand::GetTasks { active_only } => {
+            let mut cmd = GetResultsCommand::new(active_only);
+            let tasks = cmd.execute(connection)?;
+
+            println!("");
+            println!("======== Tasks ========");
+
+            for (idx, task) in tasks.iter().enumerate() {
+                let scheduler_state = task
+                    .active_task
+                    .as_ref()
+                    .map_or(SchedulerState::Uninitialized, |t| t.scheduler_state.clone());
+                let active_task_state = task
+                    .active_task
+                    .as_ref()
+                    .map_or(ActiveTaskState::Uninitialized, |at| {
+                        at.active_task_state.clone()
+                    });
+
+                println!(
+                    "\
+{}) -----------
+   name: {}
+   WU name: {}
+   project URL: {}
+   received: {}
+   report deadline: {}
+   ready to report: {}
+   state: {}
+   scheduler state: {}
+   active_task_state: {}
+   app version num: {}
+   resources: {}",
+                    idx + 1,
+                    task.name,
+                    task.wu_name,
+                    task.project_url,
+                    time_to_string(task.received_time),
+                    time_to_string(task.report_deadline),
+                    bool_to_string(task.ready_to_report),
+                    task.state,
+                    scheduler_state,
+                    active_task_state,
+                    task.version_num,
+                    if task.resources.is_empty() {
+                        "1 CPU"
+                    } else {
+                        &task.resources
+                    }
+                );
+
+                {
+                    let istate = task.state as isize;
+                    if istate >= 0 && istate <= ResultClientState::FilesDownloaded as isize {
+                        if task.suspended_via_gui {
+                            println!("   suspended via GUI: yes");
+                        }
+                        println!(
+                            "   estimated CPU time remaining: {:.6}",
+                            task.estimated_cpu_time_remaining
+                        );
+                    }
+                }
+
+                if scheduler_state as isize > SchedulerState::Uninitialized as isize {
+                    if let Some(active_task) = &task.active_task {
+                        println!(
+                            "   \
+   CPU time at last checkpoint: {:.6}
+   current CPU time: {:.6}
+   fraction done: {:.6}
+   swap size: {:.0} MB
+   working set size: {:.0} MB",
+                            active_task.checkpoint_cpu_time,
+                            active_task.current_cpu_time,
+                            active_task.fraction_done,
+                            to_mibi(active_task.swap_size),
+                            to_mibi(active_task.working_set_size_smoothed)
+                        );
+
+                        if active_task.bytes_sent > 0. || active_task.bytes_received > 0. {
+                            println!(
+                                "   bytes sent: {:.0} received: {:.0}",
+                                active_task.bytes_sent, active_task.bytes_received
+                            );
+                        }
+                    }
+                }
+
+                if task.state as isize > ResultClientState::FilesDownloaded as isize {
+                    println!(
+                        "   \
+   final CPU time: {}
+   final elapsed time: {}
+   exit_status: {}
+   signal: {}",
+                        task.final_cpu_time, task.final_elapsed_time, task.exit_status, task.signal
+                    );
+                }
+            }
+        }
         CliCommand::ReadCcConfig => ReadCCConfigCommand::default().execute(connection)?,
         CliCommand::Version => panic!("Should've never reached this line"),
     };
@@ -101,15 +207,27 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
     Ok(())
 }
 
-fn time_to_string(timestamp: i64) -> String {
+fn bool_to_string(b: bool) -> &'static str {
+    match b {
+        false => "no",
+        true => "yes",
+    }
+}
+
+fn time_to_string(timestamp: f64) -> String {
     Some(timestamp)
-        .filter(|&t| t > 0)
-        .and_then(|t| NaiveDateTime::from_timestamp_opt(t, 0))
+        .filter(|&t| t > 0.)
+        .and_then(|t| NaiveDateTime::from_timestamp_opt(t as i64, 0))
         .map(|t| {
             Local
                 .from_utc_datetime(&t)
                 .with_timezone(&Local)
+                .format("%c")
                 .to_string()
         })
         .unwrap_or("---".to_string())
+}
+
+fn to_mibi(d: f64) -> f64 {
+    d / (1024. * 1024.)
 }
