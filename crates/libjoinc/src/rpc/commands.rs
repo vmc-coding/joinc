@@ -182,6 +182,44 @@ impl Command<Vec<Message>> for GetMessagesCommand {
     }
 }
 
+// ----- GetResultsCommand -----
+
+#[derive(Deserialize)]
+struct ResultsDto {
+    result: Vec<Task>,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(rename(serialize = "get_results"))]
+pub struct GetResultsCommand {
+    #[serde(skip_deserializing)]
+    active_only: bool,
+    #[serde(skip_serializing)]
+    results: ResultsDto,
+}
+
+impl GetResultsCommand {
+    pub fn new(active_only: bool) -> Self {
+        Self {
+            active_only,
+            results: ResultsDto { result: vec![] },
+        }
+    }
+}
+
+impl std::default::Default for GetResultsCommand {
+    fn default() -> Self {
+        GetResultsCommand::new(false)
+    }
+}
+
+impl Command<Vec<Task>> for GetResultsCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<Vec<Task>> {
+        let response: Self = execute_rpc_operation(connection, self)?;
+        Ok(response.results.result)
+    }
+}
+
 // ----- ReadCCConfigCommand -----
 
 #[derive(Default, Serialize)]
