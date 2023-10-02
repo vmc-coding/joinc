@@ -68,7 +68,7 @@ impl Command<String> for Auth1Operation {
     }
 }
 
-#[derive(Default, Deserialize, Serialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(rename(serialize = "auth2"))]
 struct Auth2Operation {
     #[serde(skip_serializing)]
@@ -146,12 +146,12 @@ impl Command<Version> for ExchangeVersionsCommand {
 
 // ----- GetMessagesCommand -----
 
-#[derive(Deserialize)]
+#[derive(Default, Deserialize)]
 struct MessagesDto {
     msg: Vec<Message>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Default, Deserialize, Serialize)]
 #[serde(rename(serialize = "get_messages"))]
 pub struct GetMessagesCommand {
     #[serde(skip_deserializing)]
@@ -169,12 +169,6 @@ impl GetMessagesCommand {
     }
 }
 
-impl std::default::Default for GetMessagesCommand {
-    fn default() -> Self {
-        GetMessagesCommand::new(0)
-    }
-}
-
 impl Command<Vec<Message>> for GetMessagesCommand {
     fn execute(&mut self, connection: &mut Connection) -> Result<Vec<Message>> {
         let response: Self = execute_rpc_operation(connection, self)?;
@@ -184,7 +178,7 @@ impl Command<Vec<Message>> for GetMessagesCommand {
 
 // ----- GetResultsCommand -----
 
-#[derive(Deserialize)]
+#[derive(Default, Deserialize)]
 struct ResultsDto {
     result: Vec<Task>,
 }
@@ -204,12 +198,6 @@ impl GetResultsCommand {
             active_only,
             results: ResultsDto { result: vec![] },
         }
-    }
-}
-
-impl std::default::Default for GetResultsCommand {
-    fn default() -> Self {
-        GetResultsCommand::new(false)
     }
 }
 
