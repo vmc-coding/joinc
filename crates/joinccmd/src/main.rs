@@ -37,7 +37,8 @@ enum CliCommand {
         seqno: u32,
     },
     GetTasks {
-        #[arg(default_value = "false")]
+        /// show only active tasks
+        #[arg(long)]
         active_only: bool,
     },
     /// Read the cc_config.xml file
