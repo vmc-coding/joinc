@@ -6,7 +6,7 @@ pub fn from_str<'a, T>(s: &'a str) -> Result<T>
 where
     T: Deserialize<'a>,
 {
-    quick_xml::de::from_str(s).map_err(|_| Error::UnexpectedXml)
+    quick_xml::de::from_str(s).map_err(|err| Error::UnexpectedXml(err.to_string()))
 }
 
 // ----- Tests -----
