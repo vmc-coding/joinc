@@ -1,5 +1,34 @@
+use serde::Deserialize;
 use serde_repr::Deserialize_repr;
 use std::fmt::{self, Display};
+
+#[derive(Clone, Copy, Deserialize, Debug, PartialEq)]
+#[serde(from = "DeserializedBool")]
+pub enum Bool {
+    False,
+    True,
+}
+
+impl Default for Bool {
+    fn default() -> Self {
+        Bool::False
+    }
+}
+
+impl From<Bool> for bool {
+    fn from(b: Bool) -> Self {
+        b == Bool::True
+    }
+}
+
+impl Display for Bool {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str(match self {
+            Bool::False => "no",
+            Bool::True => "yes",
+        })
+    }
+}
 
 #[derive(Clone, Copy, Debug, Deserialize_repr)]
 #[repr(i8)]
@@ -126,5 +155,55 @@ impl Display for SchedulerState {
             SchedulerState::Scheduled => "scheduled",
             SchedulerState::UnknownToJoinc => "unknown",
         })
+    }
+}
+
+// ----- deserialization helper -----
+
+#[derive(Deserialize, Debug, PartialEq)]
+#[serde(transparent)]
+struct DeserializedBool {
+    value: Option<String>,
+}
+
+impl From<DeserializedBool> for Bool {
+    fn from(b: DeserializedBool) -> Self {
+        b.value
+            .filter(|s| s != &"0".to_string())
+            .map(|_| Bool::True)
+            .unwrap_or(Bool::False)
+    }
+}
+
+// ----- Tests -----
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use libjoincserde::from_str;
+    use serde::Deserialize;
+
+    #[test]
+    fn deserializes_booleans() {
+        #[derive(Deserialize, Debug, Default, PartialEq)]
+        #[serde(default, rename = "dto")]
+        struct Dto {
+            a_bool: Bool,
+            another_bool: Bool,
+            unset_bool: Bool,
+            not_set: Bool,
+        }
+
+        let expected = Dto {
+            a_bool: Bool::True,
+            another_bool: Bool::True,
+            unset_bool: Bool::False,
+            not_set: Bool::False,
+        };
+
+        let xml = "<dto><a_bool/><another_bool>1</another_bool><unset_bool>0</unset_bool></dto>";
+        let deserialized: Dto = from_str(xml).unwrap();
+
+        assert_eq!(deserialized, expected);
     }
 }

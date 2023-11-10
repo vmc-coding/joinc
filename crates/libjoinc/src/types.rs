@@ -7,8 +7,8 @@ pub struct ActiveTask {
     pub active_task_state: ActiveTaskState,
     pub scheduler_state: SchedulerState,
 
-    pub needs_shmem: bool,
-    pub too_large: bool,
+    pub needs_shmem: Bool,
+    pub too_large: Bool,
 
     pub pid: i32,
     pub slot: i32,
@@ -42,13 +42,14 @@ pub struct Message {
 pub struct Task {
     pub state: ResultClientState,
 
-    pub coproc_missing: bool,
-    pub got_server_ack: bool,
-    pub network_wait: bool,
-    pub project_suspended_via_gui: bool,
-    pub ready_to_report: bool,
-    pub scheduler_wait: bool,
-    pub suspended_via_gui: bool,
+    pub coproc_missing: Bool,
+    pub got_server_ack: Bool,
+    pub network_wait: Bool,
+    pub project_suspended_via_gui: Bool,
+    pub ready_to_report: Bool,
+    pub report_immediately: Bool,
+    pub scheduler_wait: Bool,
+    pub suspended_via_gui: Bool,
 
     pub estimated_cpu_time_remaining: f64,
     pub final_cpu_time: f64,
@@ -61,6 +62,8 @@ pub struct Task {
     pub version_num: i32,
 
     pub name: String,
+    pub plan_class: String,
+    pub platform: String,
     pub project_url: String,
     pub resources: String,
     pub scheduler_wait_reason: String,
