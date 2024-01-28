@@ -9,5 +9,5 @@ readme = "README.md"
 [dependencies]
 libjoincserde = { version = "0.1.0", path = "../libjoincserde" }
 md5 = "0.7.0"
-serde = { version = "1.0.188", features = ["derive"] }
-serde_repr = "0.1.16"
+serde = { version = "1.0.196", features = ["derive"] }
+serde_repr = "0.1.18"
