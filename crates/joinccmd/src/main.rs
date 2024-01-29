@@ -139,7 +139,7 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
                     task.project_url,
                     time_to_string(task.received_time),
                     time_to_string(task.report_deadline),
-                    bool_to_string(task.ready_to_report.into()),
+                    bool_to_string(task.ready_to_report),
                     task.state,
                     scheduler_state,
                     active_task_state,
@@ -154,7 +154,7 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
                 {
                     let istate = task.state as isize;
                     if istate >= 0 && istate <= ResultClientState::FilesDownloaded as isize {
-                        if task.suspended_via_gui.into() {
+                        if task.suspended_via_gui {
                             println!("   suspended via GUI: yes");
                         }
                         println!(
