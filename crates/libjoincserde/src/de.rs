@@ -19,13 +19,11 @@ mod tests {
     #[test]
     fn deserializes_structs() {
         #[derive(Deserialize, Debug, PartialEq)]
-        #[serde(rename = "inner")]
         struct InnerDTO {
             b: i32,
         }
 
         #[derive(Deserialize, Debug, PartialEq)]
-        #[serde(rename = "outer")]
         struct OuterDTO {
             a: u32,
             inner: InnerDTO,
@@ -42,10 +40,11 @@ mod tests {
         assert_eq!(deserialized, expected);
     }
 
+    // TODO the next two tests are nonsense
+
     #[test]
     fn deserializes_empty_struct() {
         #[derive(Deserialize, Debug, PartialEq)]
-        #[serde(rename = "success")]
         struct Success {}
 
         let expected = Success {};
@@ -59,7 +58,6 @@ mod tests {
     #[test]
     fn deserializes_empty_struct_self_closed() {
         #[derive(Deserialize, Debug, PartialEq)]
-        #[serde(rename = "success")]
         struct Success {}
 
         let expected = Success {};
@@ -80,7 +78,6 @@ mod tests {
         }
 
         #[derive(Deserialize, Debug, PartialEq)]
-        #[serde(rename = "dto")]
         struct Dto {
             a_color: Color,
             another_color: Color,
@@ -100,7 +97,6 @@ mod tests {
     #[test]
     fn deserializes_sequences() {
         #[derive(Deserialize, Debug, PartialEq)]
-        #[serde(rename = "dto")]
         struct Dto {
             number: Vec<i32>,
         }
@@ -118,14 +114,12 @@ mod tests {
     #[test]
     fn deserializes_sequences2() {
         #[derive(Deserialize, Debug, PartialEq)]
-        #[serde(rename = "msg")]
         struct Msg {
             id: u32,
             body: String,
         }
 
         #[derive(Deserialize, Debug, PartialEq)]
-        #[serde(rename = "msgs")]
         struct Msgs {
             msg: Vec<Msg>,
         }
@@ -145,6 +139,83 @@ mod tests {
 
         let xml = "<msgs><msg><id>2</id><body>foo</body></msg><msg><id>5</id><body>bar</body></msg></msgs>";
         let deserialized: Msgs = super::from_str(xml).unwrap();
+
+        assert_eq!(deserialized, expected);
+    }
+
+    #[test]
+    fn deserializes_sequences3() {
+        #[derive(Deserialize, Debug, PartialEq)]
+        struct GuiUrl {
+            name: String
+        }
+
+        #[derive(Deserialize, Debug, PartialEq)]
+        struct GuiUrlsDto {
+            gui_url: Vec<GuiUrl>
+        }
+
+        #[derive(Deserialize, Debug, PartialEq)]
+        #[serde(from = "GuiUrlsDto")]
+        struct GuiUrls(pub Vec<GuiUrl>);
+
+        impl From<GuiUrlsDto> for GuiUrls {
+            fn from(dto: GuiUrlsDto) -> Self {
+                GuiUrls ( dto.gui_url )
+            }
+        }
+
+        #[derive(Deserialize, Debug, PartialEq)]
+        struct Project {
+            url: String,
+            gui_urls: GuiUrls,
+        }
+
+        #[derive(Deserialize, Debug, PartialEq)]
+        struct Projects {
+            project: Vec<Project>
+        }
+
+        let expected = Projects {
+            project: vec![
+                Project {
+                    url: "p1".to_string(),
+                    gui_urls: GuiUrls (vec![
+                        GuiUrl { name : "u1.1".to_string() },
+                        GuiUrl { name : "u1.2".to_string() },
+                    ])
+                },
+                Project {
+                    url: "p2".to_string(),
+                    gui_urls: GuiUrls (vec![
+                        GuiUrl { name : "u2.1".to_string() },
+                        GuiUrl { name : "u2.3".to_string() },
+                    ])
+                },
+            ],
+        };
+
+        let xml = "\
+            <projects>
+                <project>
+                    <url>p1</url>
+                    <gui_urls>
+                        <gui_url><name>u1.1</name></gui_url>
+                        <gui_url><name>u1.2</name></gui_url>
+                    </gui_urls>
+                </project>
+                <project>
+                    <url>p2</url>
+                    <gui_urls>
+                        <gui_url><name>u2.1</name></gui_url>
+                        <ifteam>
+                            <gui_url><name>u2.2</name></gui_url>
+                        </ifteam>
+                        <gui_url><name>u2.3</name></gui_url>
+                    </gui_urls>
+                </project>
+            </projects>";
+        let deserialized: Projects = super::from_str(xml).unwrap();
 
         assert_eq!(deserialized, expected);
     }
