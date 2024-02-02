@@ -139,7 +139,7 @@ pub enum RpcReason {
     ProjectReq,
     #[default]
     #[serde(other)]
-    UnknownToJoinc = -1
+    UnknownToJoinc = -1,
 }
 
 impl Display for RpcReason {

@@ -147,12 +147,12 @@ mod tests {
     fn deserializes_sequences3() {
         #[derive(Deserialize, Debug, PartialEq)]
         struct GuiUrl {
-            name: String
+            name: String,
         }
 
         #[derive(Deserialize, Debug, PartialEq)]
         struct GuiUrlsDto {
-            gui_url: Vec<GuiUrl>
+            gui_url: Vec<GuiUrl>,
         }
 
         #[derive(Deserialize, Debug, PartialEq)]
@@ -161,7 +161,7 @@ mod tests {
 
         impl From<GuiUrlsDto> for GuiUrls {
             fn from(dto: GuiUrlsDto) -> Self {
-                GuiUrls ( dto.gui_url )
+                GuiUrls(dto.gui_url)
             }
         }
 
@@ -173,24 +173,32 @@ mod tests {
 
         #[derive(Deserialize, Debug, PartialEq)]
         struct Projects {
-            project: Vec<Project>
+            project: Vec<Project>,
         }
 
         let expected = Projects {
             project: vec![
                 Project {
                     url: "p1".to_string(),
-                    gui_urls: GuiUrls (vec![
-                        GuiUrl { name : "u1.1".to_string() },
-                        GuiUrl { name : "u1.2".to_string() },
-                    ])
+                    gui_urls: GuiUrls(vec![
+                        GuiUrl {
+                            name: "u1.1".to_string(),
+                        },
+                        GuiUrl {
+                            name: "u1.2".to_string(),
+                        },
+                    ]),
                 },
                 Project {
                     url: "p2".to_string(),
-                    gui_urls: GuiUrls (vec![
-                        GuiUrl { name : "u2.1".to_string() },
-                        GuiUrl { name : "u2.3".to_string() },
-                    ])
+                    gui_urls: GuiUrls(vec![
+                        GuiUrl {
+                            name: "u2.1".to_string(),
+                        },
+                        GuiUrl {
+                            name: "u2.3".to_string(),
+                        },
+                    ]),
                 },
             ],
         };
