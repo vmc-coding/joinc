@@ -2,22 +2,26 @@ use serde::Deserialize;
 use serde_repr::Deserialize_repr;
 use std::fmt::{self, Display};
 
-#[derive(Clone, Copy, Deserialize, Debug, PartialEq)]
+#[derive(Clone, Copy, Deserialize, Debug, Default, PartialEq, Eq)]
 #[serde(from = "DeserializedBool")]
 pub enum Bool {
+    #[default]
     False,
     True,
-}
-
-impl Default for Bool {
-    fn default() -> Self {
-        Bool::False
-    }
 }
 
 impl From<Bool> for bool {
     fn from(b: Bool) -> Self {
         b == Bool::True
+    }
+}
+
+impl From<bool> for Bool {
+    fn from(b: bool) -> Self {
+        match b {
+            false => Bool::True,
+            true => Bool::True,
+        }
     }
 }
 
@@ -30,7 +34,7 @@ impl Display for Bool {
     }
 }
 
-#[derive(Clone, Copy, Debug, Deserialize_repr)]
+#[derive(Clone, Copy, Debug, Default, Deserialize_repr, PartialEq, Eq)]
 #[repr(i8)]
 pub enum ActiveTaskState {
     Uninitialized,
@@ -44,14 +48,9 @@ pub enum ActiveTaskState {
     QuitPending,
     Suspended,
     CopyPending,
+    #[default]
     #[serde(other)]
     UnknownToJoinc = -1,
-}
-
-impl std::default::Default for ActiveTaskState {
-    fn default() -> Self {
-        ActiveTaskState::Uninitialized
-    }
 }
 
 impl Display for ActiveTaskState {
@@ -73,12 +72,13 @@ impl Display for ActiveTaskState {
     }
 }
 
-#[derive(Clone, Copy, Debug, Deserialize_repr)]
+#[derive(Clone, Copy, Debug, Default, Deserialize_repr, PartialEq, Eq)]
 #[repr(i8)]
 pub enum MsgInfo {
     Info = 1,
     UserAlert,
     InternalError,
+    #[default]
     #[serde(other)]
     UnknownToJoinc = -1,
 }
@@ -94,7 +94,7 @@ impl Display for MsgInfo {
     }
 }
 
-#[derive(Clone, Copy, Debug, Deserialize_repr)]
+#[derive(Clone, Copy, Debug, Default, Deserialize_repr, PartialEq, Eq)]
 #[repr(i8)]
 pub enum ResultClientState {
     New,
@@ -105,14 +105,9 @@ pub enum ResultClientState {
     FilesUploaded,
     Aborted,
     UploadFailed,
+    #[default]
     #[serde(other)]
     UnknownToJoinc = -1,
-}
-
-impl std::default::Default for ResultClientState {
-    fn default() -> Self {
-        ResultClientState::New
-    }
 }
 
 impl Display for ResultClientState {
@@ -131,20 +126,15 @@ impl Display for ResultClientState {
     }
 }
 
-#[derive(Clone, Copy, Debug, Deserialize_repr)]
+#[derive(Clone, Copy, Debug, Default, Deserialize_repr, PartialEq, Eq)]
 #[repr(i8)]
 pub enum SchedulerState {
     Uninitialized,
     Preempted,
     Scheduled,
+    #[default]
     #[serde(other)]
     UnknownToJoinc = -1,
-}
-
-impl std::default::Default for SchedulerState {
-    fn default() -> Self {
-        SchedulerState::Uninitialized
-    }
 }
 
 impl Display for SchedulerState {
@@ -160,7 +150,7 @@ impl Display for SchedulerState {
 
 // ----- deserialization helper -----
 
-#[derive(Deserialize, Debug, PartialEq)]
+#[derive(Deserialize, Debug, PartialEq, Eq)]
 #[serde(transparent)]
 struct DeserializedBool {
     value: Option<String>,
@@ -185,7 +175,7 @@ mod tests {
 
     #[test]
     fn deserializes_booleans() {
-        #[derive(Deserialize, Debug, Default, PartialEq)]
+        #[derive(Deserialize, Debug, Default, PartialEq, Eq)]
         #[serde(default, rename = "dto")]
         struct Dto {
             a_bool: Bool,
