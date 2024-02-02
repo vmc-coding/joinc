@@ -128,6 +128,38 @@ impl Display for ResultClientState {
 
 #[derive(Clone, Copy, Debug, Default, Deserialize_repr, PartialEq, Eq)]
 #[repr(i8)]
+pub enum RpcReason {
+    None,
+    UserReq,
+    ResultsDue,
+    NeedWork,
+    TrickleUp,
+    AcctMgrReq,
+    Init,
+    ProjectReq,
+    #[default]
+    #[serde(other)]
+    UnknownToJoinc = -1
+}
+
+impl Display for RpcReason {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str(match self {
+            RpcReason::None => "",
+            RpcReason::UserReq => "Requested by user",
+            RpcReason::ResultsDue => "To fetch work",
+            RpcReason::NeedWork => "To report completed tasks",
+            RpcReason::TrickleUp => "To send trickle-up message",
+            RpcReason::AcctMgrReq => "Requested by account manager",
+            RpcReason::Init => "Project initialization",
+            RpcReason::ProjectReq => "Requested by project",
+            RpcReason::UnknownToJoinc => "unknown",
+        })
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize_repr, PartialEq, Eq)]
+#[repr(i8)]
 pub enum SchedulerState {
     Uninitialized,
     Preempted,

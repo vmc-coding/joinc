@@ -176,6 +176,35 @@ impl Command<Vec<Message>> for GetMessagesCommand {
     }
 }
 
+// ----- GetProjectStatusCommand -----
+
+#[derive(Default, Deserialize)]
+struct ProjectsDto {
+    project: Vec<Project>,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(rename(serialize = "get_project_status"))]
+pub struct GetProjectStatusCommand {
+    #[serde(skip_serializing)]
+    projects: ProjectsDto,
+}
+
+impl GetProjectStatusCommand {
+    pub fn new() -> Self {
+        Self {
+            projects: ProjectsDto { project: vec![] },
+        }
+    }
+}
+
+impl Command<Vec<Project>> for GetProjectStatusCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<Vec<Project>> {
+        let response: Self = execute_rpc_operation(connection, self)?;
+        Ok(response.projects.project)
+    }
+}
+
 // ----- GetResultsCommand -----
 
 #[derive(Default, Deserialize)]
