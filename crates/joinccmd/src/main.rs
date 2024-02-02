@@ -34,12 +34,16 @@ enum CliCommand {
     ClientVersion,
     /// Show messages
     GetMessages {
-        /// show messages with sequence number > seqno only
+        /// Show messages with sequence number > seqno only
         #[arg(default_value = "0")]
         seqno: u32,
     },
+    /// Show status of all attached projects
+    #[command(visible_alias = "get-project-status")]
+    GetProjects,
+    /// Show tasks
     GetTasks {
-        /// show only active tasks
+        /// Show only active tasks
         #[arg(long)]
         active_only: bool,
     },
@@ -92,6 +96,17 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
                 println!("{}", msg.display());
             }
         }
+        CliCommand::GetProjects => {
+            println!("======== Projects ========");
+            for (idx, project) in GetProjectStatusCommand::new()
+                .execute(connection)?
+                .iter()
+                .enumerate()
+            {
+                println!("{}) -----------", idx + 1);
+                print!("{}", project.display());
+            }
+        }
         CliCommand::GetTasks { active_only } => {
             println!("\n======== Tasks ========");
             for (idx, task) in GetResultsCommand::new(active_only)
@@ -127,6 +142,15 @@ trait Display<T> {
 impl<T> Display<T> for T {
     fn display(self) -> Displayable<T> {
         Displayable(self)
+    }
+}
+
+impl fmt::Display for Displayable<bool> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match &self.0 {
+            false => "no",
+            true => "yes",
+        })
     }
 }
 
@@ -166,6 +190,14 @@ impl fmt::Display for FormattedTimestamp {
     }
 }
 
+struct Usage(f64);
+
+impl fmt::Display for Usage {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:.2}MB", self.0 / (1024. * 1024.))
+    }
+}
+
 // ----- displaying libjoinc's types -----
 
 impl fmt::Display for Displayable<Error> {
@@ -194,6 +226,51 @@ impl fmt::Display for Displayable<Message> {
             self.0.project,
             self.0.body.trim()
         )
+    }
+}
+
+impl fmt::Display for Displayable<&Project> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        const INDENT: &str = "   ";
+
+        let project = &self.0;
+
+        writeln!(f, "{INDENT}name: {}", project.project_name)?;
+        writeln!(f, "{INDENT}master URL: {}", project.master_url)?;
+        writeln!(f, "{INDENT}user_name: {}", project.user_name)?;
+        writeln!(f, "{INDENT}team_name: {}", project.team_name)?;
+        writeln!(f, "{INDENT}resource share: {}", project.resource_share)?;
+        writeln!(f, "{INDENT}user_total_credit: {}", project.user_total_credit)?;
+        writeln!(f, "{INDENT}user_expavg_credit: {}", project.user_expavg_credit)?;
+        writeln!(f, "{INDENT}host_total_credit: {}", project.host_total_credit)?;
+        writeln!(f, "{INDENT}host_expavg_credit: {}", project.host_expavg_credit)?;
+        writeln!(f, "{INDENT}nrpc_failures: {}", project.nrpc_failures)?;
+        writeln!(f, "{INDENT}master_fetch_failures: {}", project.master_fetch_failures)?;
+        writeln!(f, "{INDENT}master fetch pending: {}", project.master_url_fetch_pending)?;
+        writeln!(f, "{INDENT}scheduler RPC pending: {}", (project.sched_rpc_pending != RpcReason::None).display())?;
+        writeln!(f, "{INDENT}trickle upload pending: {}", project.trickle_up_pending)?;
+        writeln!(f, "{INDENT}attached via Account Manager: {}", project.attached_via_acct_mgr)?;
+        writeln!(f, "{INDENT}ended: {}", project.ended)?;
+        writeln!(f, "{INDENT}suspended via GUI: {}", project.suspended_via_gui)?;
+        writeln!(f, "{INDENT}don't request more work: {}", project.dont_request_more_work)?;
+        writeln!(f, "{INDENT}disk usage: {}", Usage(project.disk_usage))?;
+        writeln!(f, "{INDENT}last RPC: {}", FormattedTimestamp::new(project.last_rpc_time))?;
+        writeln!(f)?;
+        writeln!(f, "{INDENT}project files downloaded: {}", FormattedTimestamp::new(project.project_files_downloaded_time))?;
+
+        for gui_url in &project.gui_urls.0 {
+            writeln!(f, "GUI URL:")?;
+            writeln!(f, "{INDENT}name: {}", gui_url.name)?;
+            writeln!(f, "{INDENT}description: {}", gui_url.description)?;
+            writeln!(f, "{INDENT}URL: {}", gui_url.url)?;
+        }
+
+        writeln!(f, "{INDENT}jobs succeeded: {}", project.njobs_success)?;
+        writeln!(f, "{INDENT}jobs failed: {}", project.njobs_error)?;
+        writeln!(f, "{INDENT}elapsed time: {}", project.elapsed_time)?;
+        writeln!(f, "{INDENT}cross-project ID: {}", project.external_cpid)?;
+
+        Ok(())
     }
 }
 
