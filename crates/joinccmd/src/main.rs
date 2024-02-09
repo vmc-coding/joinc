@@ -93,7 +93,7 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
         }
         CliCommand::GetProjects => {
             println!("======== Projects ========");
-            for (idx, project) in GetProjectStatusCommand::new()
+            for (idx, project) in GetProjectStatusCommand::default()
                 .execute(connection)?
                 .iter()
                 .enumerate()

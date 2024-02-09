@@ -183,19 +183,11 @@ struct ProjectsDto {
     project: Vec<Project>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Default, Deserialize, Serialize)]
 #[serde(rename(serialize = "get_project_status"))]
 pub struct GetProjectStatusCommand {
     #[serde(skip_serializing)]
     projects: ProjectsDto,
-}
-
-impl GetProjectStatusCommand {
-    pub fn new() -> Self {
-        Self {
-            projects: ProjectsDto { project: vec![] },
-        }
-    }
 }
 
 impl Command<Vec<Project>> for GetProjectStatusCommand {
@@ -242,12 +234,6 @@ impl Command<Vec<Task>> for GetResultsCommand {
 #[derive(Default, Serialize)]
 #[serde(rename(serialize = "read_cc_config"))]
 pub struct ReadCCConfigCommand {}
-
-impl ReadCCConfigCommand {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
 
 impl Command<()> for ReadCCConfigCommand {
     fn execute(&mut self, connection: &mut Connection) -> Result<()> {
