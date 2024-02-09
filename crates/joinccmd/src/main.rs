@@ -32,6 +32,8 @@ struct Cli {
 enum CliCommand {
     /// Show client version
     ClientVersion,
+    /// Show cc status
+    GetCCStatus,
     /// Show messages
     GetMessages {
         /// Show messages with sequence number > seqno only
@@ -85,6 +87,9 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
     match command {
         CliCommand::ClientVersion => {
             println!("Client version: {}", ExchangeVersionsCommand::default().execute(connection)?.display());
+        }
+        CliCommand::GetCCStatus => {
+            print!("{}", GetCCStatusCommand::default().execute(connection)?.display());
         }
         CliCommand::GetMessages { seqno } => {
             for msg in GetMessagesCommand::new(seqno).execute(connection)? {
@@ -183,6 +188,24 @@ impl fmt::Display for FormattedTimestamp {
     }
 }
 
+struct FormattedCCState<'a>(&'a str, RunMode, f64, RunMode, SuspendReason);
+
+impl fmt::Display for FormattedCCState<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        const INDENT: &str = "    ";
+
+        writeln!(f, "{} status", self.0)?;
+        writeln!(f, "{INDENT}{}", match self.4 {
+            SuspendReason::NotSuspended => "not suspended".to_string(),
+            _ => format!("suspended: {}", self.4),
+        })?;
+        writeln!(f, "{INDENT}current mode: {}", self.1)?;
+        writeln!(f, "{INDENT}perm mode: {}", self.3)?;
+        writeln!(f, "{INDENT}perm becomes current in {} sec", self.2 as isize)?;
+        Ok(())
+    }
+}
+
 struct Usage(f64);
 
 impl fmt::Display for Usage {
@@ -192,6 +215,19 @@ impl fmt::Display for Usage {
 }
 
 // ----- displaying libjoinc's types -----
+
+impl fmt::Display for Displayable<CCStatus> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "network connection status: {}", self.0.network_status)?;
+        write!(f, "{}", FormattedCCState("CPU",
+                self.0.task_mode, self.0.task_mode_delay, self.0.task_mode_perm, self.0.task_suspend_reason))?;
+        write!(f, "{}", FormattedCCState("GPU",
+                self.0.gpu_mode, self.0.gpu_mode_delay, self.0.gpu_mode_perm, self.0.gpu_suspend_reason))?;
+        write!(f, "{}", FormattedCCState("Network",
+                self.0.network_mode, self.0.network_mode_delay, self.0.network_mode_perm, self.0.network_suspend_reason))?;
+        Ok(())
+    }
+}
 
 impl fmt::Display for Displayable<Error> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
