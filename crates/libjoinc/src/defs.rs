@@ -56,18 +56,18 @@ pub enum ActiveTaskState {
 impl Display for ActiveTaskState {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str(match self {
-            ActiveTaskState::Uninitialized => "Uninitialized",
-            ActiveTaskState::Executing => "Executing",
-            ActiveTaskState::Suspended => "Suspended",
-            ActiveTaskState::AbortPending => "AbortPending",
-            ActiveTaskState::Exited => "Exited",
-            ActiveTaskState::WasSignaled => "WasSignaled",
-            ActiveTaskState::ExitUnknown => "EXIT_Unknown",
-            ActiveTaskState::Aborted => "Aborted",
-            ActiveTaskState::CouldntStart => "CouldntStart",
-            ActiveTaskState::QuitPending => "QuitPending",
-            ActiveTaskState::CopyPending => "CopyPending",
-            ActiveTaskState::UnknownToJoinc => "Unknown",
+            ActiveTaskState::Uninitialized => "UNINITIALIZED",
+            ActiveTaskState::Executing => "EXECUTING",
+            ActiveTaskState::Suspended => "SUSPENDED",
+            ActiveTaskState::AbortPending => "ABORT_PENDING",
+            ActiveTaskState::Exited => "EXITED",
+            ActiveTaskState::WasSignaled => "WAS_SIGNALED",
+            ActiveTaskState::ExitUnknown => "EXIT_UNKNOWN",
+            ActiveTaskState::Aborted => "ABORTED",
+            ActiveTaskState::CouldntStart => "COULDNT_START",
+            ActiveTaskState::QuitPending => "QUIT_PENDING",
+            ActiveTaskState::CopyPending => "COPY_PENDING",
+            ActiveTaskState::UnknownToJoinc => "UNKNOWN",
         })
     }
 }
