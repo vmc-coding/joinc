@@ -45,7 +45,7 @@ struct GuiUrlsDto {
 
 impl From<GuiUrlsDto> for GuiUrls {
     fn from(dto: GuiUrlsDto) -> Self {
-        GuiUrls(dto.gui_url)
+        GuiUrls ( dto.gui_url )
     }
 }
 

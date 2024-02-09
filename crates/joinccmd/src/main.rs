@@ -240,75 +240,23 @@ impl fmt::Display for Displayable<&Project> {
         writeln!(f, "{INDENT}user_name: {}", project.user_name)?;
         writeln!(f, "{INDENT}team_name: {}", project.team_name)?;
         writeln!(f, "{INDENT}resource share: {}", project.resource_share)?;
-        writeln!(
-            f,
-            "{INDENT}user_total_credit: {}",
-            project.user_total_credit
-        )?;
-        writeln!(
-            f,
-            "{INDENT}user_expavg_credit: {}",
-            project.user_expavg_credit
-        )?;
-        writeln!(
-            f,
-            "{INDENT}host_total_credit: {}",
-            project.host_total_credit
-        )?;
-        writeln!(
-            f,
-            "{INDENT}host_expavg_credit: {}",
-            project.host_expavg_credit
-        )?;
+        writeln!(f, "{INDENT}user_total_credit: {}", project.user_total_credit)?;
+        writeln!(f, "{INDENT}user_expavg_credit: {}", project.user_expavg_credit)?;
+        writeln!(f, "{INDENT}host_total_credit: {}", project.host_total_credit)?;
+        writeln!(f, "{INDENT}host_expavg_credit: {}", project.host_expavg_credit)?;
         writeln!(f, "{INDENT}nrpc_failures: {}", project.nrpc_failures)?;
-        writeln!(
-            f,
-            "{INDENT}master_fetch_failures: {}",
-            project.master_fetch_failures
-        )?;
-        writeln!(
-            f,
-            "{INDENT}master fetch pending: {}",
-            project.master_url_fetch_pending
-        )?;
-        writeln!(
-            f,
-            "{INDENT}scheduler RPC pending: {}",
-            (project.sched_rpc_pending != RpcReason::None).display()
-        )?;
-        writeln!(
-            f,
-            "{INDENT}trickle upload pending: {}",
-            project.trickle_up_pending
-        )?;
-        writeln!(
-            f,
-            "{INDENT}attached via Account Manager: {}",
-            project.attached_via_acct_mgr
-        )?;
+        writeln!(f, "{INDENT}master_fetch_failures: {}", project.master_fetch_failures)?;
+        writeln!(f, "{INDENT}master fetch pending: {}", project.master_url_fetch_pending)?;
+        writeln!(f, "{INDENT}scheduler RPC pending: {}", (project.sched_rpc_pending != RpcReason::None).display())?;
+        writeln!(f, "{INDENT}trickle upload pending: {}", project.trickle_up_pending)?;
+        writeln!(f, "{INDENT}attached via Account Manager: {}", project.attached_via_acct_mgr)?;
         writeln!(f, "{INDENT}ended: {}", project.ended)?;
-        writeln!(
-            f,
-            "{INDENT}suspended via GUI: {}",
-            project.suspended_via_gui
-        )?;
-        writeln!(
-            f,
-            "{INDENT}don't request more work: {}",
-            project.dont_request_more_work
-        )?;
+        writeln!(f, "{INDENT}suspended via GUI: {}", project.suspended_via_gui)?;
+        writeln!(f, "{INDENT}don't request more work: {}", project.dont_request_more_work)?;
         writeln!(f, "{INDENT}disk usage: {}", Usage(project.disk_usage))?;
-        writeln!(
-            f,
-            "{INDENT}last RPC: {}",
-            FormattedTimestamp::new(project.last_rpc_time)
-        )?;
+        writeln!(f, "{INDENT}last RPC: {}", FormattedTimestamp::new(project.last_rpc_time))?;
         writeln!(f)?;
-        writeln!(
-            f,
-            "{INDENT}project files downloaded: {}",
-            FormattedTimestamp::new(project.project_files_downloaded_time)
-        )?;
+        writeln!(f, "{INDENT}project files downloaded: {}", FormattedTimestamp::new(project.project_files_downloaded_time))?;
 
         for gui_url in &project.gui_urls.0 {
             writeln!(f, "GUI URL:")?;
