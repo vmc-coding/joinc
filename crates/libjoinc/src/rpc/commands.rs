@@ -192,6 +192,38 @@ impl Command<Vec<Message>> for GetMessagesCommand {
     }
 }
 
+// ----- GetNoticesCommand -----
+
+#[derive(Default, Deserialize)]
+struct NoticesDto {
+    notice: Vec<Notice>,
+}
+
+#[derive(Default, Deserialize, Serialize)]
+#[serde(rename(serialize = "get_notices"))]
+pub struct GetNoticesCommand {
+    #[serde(skip_deserializing)]
+    seqno: u32,
+    #[serde(skip_serializing)]
+    notices: NoticesDto,
+}
+
+impl GetNoticesCommand {
+    pub fn new(seqno: u32) -> Self {
+        Self {
+            seqno,
+            notices: NoticesDto { notice: vec![] },
+        }
+    }
+}
+
+impl Command<Vec<Notice>> for GetNoticesCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<Vec<Notice>> {
+        let response: Self = execute_rpc_operation(connection, self)?;
+        Ok(response.notices.notice)
+    }
+}
+
 // ----- GetProjectStatusCommand -----
 
 #[derive(Default, Deserialize)]

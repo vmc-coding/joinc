@@ -91,6 +91,23 @@ pub struct Message {
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
+pub struct Notice {
+    pub arrival_time: f64,
+    pub create_time: f64,
+
+    pub seqno: i32,
+
+    pub category: String,
+    pub description: String,
+    pub link: String,
+    pub project_name: String,
+    pub title: String,
+
+    pub is_private: Bool,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
 pub struct Project {
     pub anonymous_platform: Bool,
     pub attached_via_acct_mgr: Bool,
