@@ -40,6 +40,12 @@ enum CliCommand {
         #[arg(default_value = "0")]
         seqno: u32,
     },
+    /// Show notices
+    GetNotices {
+        /// Show notices with sequence number > seqno only
+        #[arg(default_value = "0")]
+        seqno: u32,
+    },
     /// Show status of all attached projects
     #[command(visible_alias = "get-project-status")]
     GetProjects,
@@ -94,6 +100,11 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
         CliCommand::GetMessages { seqno } => {
             for msg in GetMessagesCommand::new(seqno).execute(connection)? {
                 println!("{}", msg.display());
+            }
+        }
+        CliCommand::GetNotices { seqno } => {
+            for notice in GetNoticesCommand::new(seqno).execute(connection)?.into_iter().rev() {
+                println!("{}", notice.display());
             }
         }
         CliCommand::GetProjects => {
@@ -249,6 +260,16 @@ impl fmt::Display for Displayable<Message> {
             self.0.priority,
             self.0.project,
             self.0.body.trim()
+        )
+    }
+}
+
+impl fmt::Display for Displayable<Notice> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}: ({}) {}",
+            self.0.seqno,
+            FormattedTimestamp::with_format(self.0.create_time, "%d-%b-%Y %H:%M:%S"),
+            self.0.description.trim()
         )
     }
 }
