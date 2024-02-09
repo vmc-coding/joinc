@@ -295,12 +295,16 @@ impl fmt::Display for Displayable<&Task> {
             if task.suspended_via_gui.into() {
                 writeln!(f, "{INDENT}suspended via GUI: yes")?;
             }
-            writeln!(f, "{INDENT}estimated CPU time remaining: {:.6}",
-                task.estimated_cpu_time_remaining)?;
+            writeln!(f, "{INDENT}estimated CPU time remaining: {:.6}", task.estimated_cpu_time_remaining)?;
+            if let Some(active_task) = &task.active_task {
+                writeln!(f, "{INDENT}elapsed task time: {:.6}", active_task.elapsed_time)?;
+            }
         }
 
         if scheduler_state as isize > SchedulerState::Uninitialized as isize {
             if let Some(active_task) = &task.active_task {
+                writeln!(f, "{INDENT}slot: {}", active_task.slot)?;
+                writeln!(f, "{INDENT}PID: {}", active_task.pid)?;
                 writeln!(f, "{INDENT}CPU time at last checkpoint: {:.6}", active_task.checkpoint_cpu_time)?;
                 writeln!(f, "{INDENT}current CPU time: {:.6}", active_task.current_cpu_time)?;
                 writeln!(f, "{INDENT}fraction done: {:.6}", active_task.fraction_done)?;
