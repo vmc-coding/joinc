@@ -144,6 +144,22 @@ impl Command<Version> for ExchangeVersionsCommand {
     }
 }
 
+// ----- GetCCStatusCommand -----
+
+#[derive(Default, Deserialize, Serialize)]
+#[serde(rename(serialize = "get_cc_status"))]
+pub struct GetCCStatusCommand {
+    #[serde(skip_serializing)]
+    cc_status: CCStatus,
+}
+
+impl Command<CCStatus> for GetCCStatusCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<CCStatus> {
+        let response: Self = execute_rpc_operation(connection, self)?;
+        Ok(response.cc_status)
+    }
+}
+
 // ----- GetMessagesCommand -----
 
 #[derive(Default, Deserialize)]
