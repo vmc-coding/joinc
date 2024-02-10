@@ -169,19 +169,19 @@ impl fmt::Display for Displayable<bool> {
 }
 
 struct FormattedTimestamp {
-    timestamp: f64,
+    timestamp: Timestamp,
     format: &'static str,
 }
 
 impl FormattedTimestamp {
-    fn new(timestamp: f64) -> Self {
+    fn new(timestamp: Timestamp) -> Self {
         Self {
             timestamp,
             format: "%c",
         }
     }
 
-    fn with_format(timestamp: f64, format: &'static str) -> FormattedTimestamp {
+    fn with_format(timestamp: Timestamp, format: &'static str) -> Self {
         Self { timestamp, format }
     }
 }
@@ -189,7 +189,7 @@ impl FormattedTimestamp {
 impl fmt::Display for FormattedTimestamp {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}",
-            &Some(self.timestamp)
+            &Some(self.timestamp.0)
                 .filter(|&t| t > 0.)
                 .and_then(|t| NaiveDateTime::from_timestamp_opt(t as i64, 0))
                 .map(|ndt| Local
@@ -264,14 +264,14 @@ impl fmt::Display for Displayable<FileTransfer> {
 
         if let Some(pfx) = &self.0.persistent_file_xfer {
             direction = if pfx.is_upload.into() { "upload" } else { "download" };
-            time_so_far = pfx.time_so_far;
+            time_so_far = pfx.time_so_far.into();
         }
 
         if let Some(xfer) = &self.0.file_xfer {
             is_active = true;
             bytes_xferred = xfer.bytes_xferred;
             xfer_speed = xfer.xfer_speed;
-            estimated_xfer_time_remaining = xfer.estimated_xfer_time_remaining;
+            estimated_xfer_time_remaining = xfer.estimated_xfer_time_remaining.into();
         }
 
         writeln!(f, "{INDENT3}name: {}", self.0.name)?;
@@ -385,7 +385,7 @@ impl fmt::Display for Displayable<Task> {
             if task.suspended_via_gui.into() {
                 writeln!(f, "{INDENT3}suspended via GUI: yes")?;
             }
-            writeln!(f, "{INDENT3}estimated CPU time remaining: {:.6}", task.estimated_cpu_time_remaining)?;
+            writeln!(f, "{INDENT3}estimated CPU time remaining: {:.6}", task.estimated_cpu_time_remaining.0)?;
             if let Some(active_task) = &task.active_task {
                 writeln!(f, "{INDENT3}elapsed task time: {:.6}", active_task.elapsed_time)?;
             }
@@ -409,8 +409,8 @@ impl fmt::Display for Displayable<Task> {
         }
 
         if task.state as isize > ResultClientState::FilesDownloaded as isize {
-            writeln!(f, "{INDENT3}final CPU time: {:.6}", task.final_cpu_time)?;
-            writeln!(f, "{INDENT3}final elapsed time: {:.6}", task.final_elapsed_time)?;
+            writeln!(f, "{INDENT3}final CPU time: {:.6}", task.final_cpu_time.0)?;
+            writeln!(f, "{INDENT3}final elapsed time: {:.6}", task.final_elapsed_time.0)?;
             writeln!(f, "{INDENT3}exit_status: {}", task.exit_status)?;
             writeln!(f, "{INDENT3}signal: {}", task.signal)?;
         }
