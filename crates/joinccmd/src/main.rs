@@ -8,7 +8,9 @@ use std::fmt;
 
 use chrono::prelude::*;
 
-const JOINCCMD_VERSION: &'static str = env!("CARGO_PKG_VERSION");
+static JOINCCMD_VERSION: &str = env!("CARGO_PKG_VERSION");
+static INDENT3: &str = "   ";
+static INDENT4: &str = "    ";
 
 #[derive(Parser)]
 struct Cli {
@@ -204,16 +206,14 @@ struct FormattedCCState<'a>(&'a str, RunMode, f64, RunMode, SuspendReason);
 
 impl fmt::Display for FormattedCCState<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        const INDENT: &str = "    ";
-
         writeln!(f, "{} status", self.0)?;
-        writeln!(f, "{INDENT}{}", match self.4 {
+        writeln!(f, "{INDENT4}{}", match self.4 {
             SuspendReason::NotSuspended => "not suspended".to_string(),
             _ => format!("suspended: {}", self.4),
         })?;
-        writeln!(f, "{INDENT}current mode: {}", self.1)?;
-        writeln!(f, "{INDENT}perm mode: {}", self.3)?;
-        writeln!(f, "{INDENT}perm becomes current in {} sec", self.2 as isize)?;
+        writeln!(f, "{INDENT4}current mode: {}", self.1)?;
+        writeln!(f, "{INDENT4}perm mode: {}", self.3)?;
+        writeln!(f, "{INDENT4}perm becomes current in {} sec", self.2 as isize)?;
         Ok(())
     }
 }
@@ -255,7 +255,6 @@ impl fmt::Display for Displayable<Error> {
 
 impl fmt::Display for Displayable<&FileTransfer> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        const INDENT: &str = "   ";
         let mut direction = "unknown";
         let mut is_active = false;
         let mut time_so_far = 0f64;
@@ -275,16 +274,16 @@ impl fmt::Display for Displayable<&FileTransfer> {
             estimated_xfer_time_remaining = xfer.estimated_xfer_time_remaining;
         }
 
-        writeln!(f, "{INDENT}name: {}", self.0.name)?;
-        writeln!(f, "{INDENT}direction: {}", direction)?;
-        writeln!(f, "{INDENT}sticky: {}", self.0.sticky)?;
-        writeln!(f, "{INDENT}xfer active: {}", is_active.display())?;
-        writeln!(f, "{INDENT}time_so_far: {:.6}", time_so_far)?;
+        writeln!(f, "{INDENT3}name: {}", self.0.name)?;
+        writeln!(f, "{INDENT3}direction: {}", direction)?;
+        writeln!(f, "{INDENT3}sticky: {}", self.0.sticky)?;
+        writeln!(f, "{INDENT3}xfer active: {}", is_active.display())?;
+        writeln!(f, "{INDENT3}time_so_far: {:.6}", time_so_far)?;
         if is_active {
-            writeln!(f, "{INDENT}estimated_xfer_time_remaining: {:.6}", estimated_xfer_time_remaining)?;
+            writeln!(f, "{INDENT3}estimated_xfer_time_remaining: {:.6}", estimated_xfer_time_remaining)?;
         }
-        writeln!(f, "{INDENT}bytes_xferred: {:.6}", bytes_xferred)?;
-        writeln!(f, "{INDENT}xfer_speed: {:.6}", xfer_speed)?;
+        writeln!(f, "{INDENT3}bytes_xferred: {:.6}", bytes_xferred)?;
+        writeln!(f, "{INDENT3}xfer_speed: {:.6}", xfer_speed)?;
 
         Ok(())
     }
@@ -314,44 +313,42 @@ impl fmt::Display for Displayable<Notice> {
 
 impl fmt::Display for Displayable<&Project> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        const INDENT: &str = "   ";
-
         let project = &self.0;
 
-        writeln!(f, "{INDENT}name: {}", project.project_name)?;
-        writeln!(f, "{INDENT}master URL: {}", project.master_url)?;
-        writeln!(f, "{INDENT}user_name: {}", project.user_name)?;
-        writeln!(f, "{INDENT}team_name: {}", project.team_name)?;
-        writeln!(f, "{INDENT}resource share: {}", project.resource_share)?;
-        writeln!(f, "{INDENT}user_total_credit: {}", project.user_total_credit)?;
-        writeln!(f, "{INDENT}user_expavg_credit: {}", project.user_expavg_credit)?;
-        writeln!(f, "{INDENT}host_total_credit: {}", project.host_total_credit)?;
-        writeln!(f, "{INDENT}host_expavg_credit: {}", project.host_expavg_credit)?;
-        writeln!(f, "{INDENT}nrpc_failures: {}", project.nrpc_failures)?;
-        writeln!(f, "{INDENT}master_fetch_failures: {}", project.master_fetch_failures)?;
-        writeln!(f, "{INDENT}master fetch pending: {}", project.master_url_fetch_pending)?;
-        writeln!(f, "{INDENT}scheduler RPC pending: {}", (project.sched_rpc_pending != RpcReason::None).display())?;
-        writeln!(f, "{INDENT}trickle upload pending: {}", project.trickle_up_pending)?;
-        writeln!(f, "{INDENT}attached via Account Manager: {}", project.attached_via_acct_mgr)?;
-        writeln!(f, "{INDENT}ended: {}", project.ended)?;
-        writeln!(f, "{INDENT}suspended via GUI: {}", project.suspended_via_gui)?;
-        writeln!(f, "{INDENT}don't request more work: {}", project.dont_request_more_work)?;
-        writeln!(f, "{INDENT}disk usage: {}", Usage(project.disk_usage))?;
-        writeln!(f, "{INDENT}last RPC: {}", FormattedTimestamp::new(project.last_rpc_time))?;
+        writeln!(f, "{INDENT3}name: {}", project.project_name)?;
+        writeln!(f, "{INDENT3}master URL: {}", project.master_url)?;
+        writeln!(f, "{INDENT3}user_name: {}", project.user_name)?;
+        writeln!(f, "{INDENT3}team_name: {}", project.team_name)?;
+        writeln!(f, "{INDENT3}resource share: {}", project.resource_share)?;
+        writeln!(f, "{INDENT3}user_total_credit: {}", project.user_total_credit)?;
+        writeln!(f, "{INDENT3}user_expavg_credit: {}", project.user_expavg_credit)?;
+        writeln!(f, "{INDENT3}host_total_credit: {}", project.host_total_credit)?;
+        writeln!(f, "{INDENT3}host_expavg_credit: {}", project.host_expavg_credit)?;
+        writeln!(f, "{INDENT3}nrpc_failures: {}", project.nrpc_failures)?;
+        writeln!(f, "{INDENT3}master_fetch_failures: {}", project.master_fetch_failures)?;
+        writeln!(f, "{INDENT3}master fetch pending: {}", project.master_url_fetch_pending)?;
+        writeln!(f, "{INDENT3}scheduler RPC pending: {}", (project.sched_rpc_pending != RpcReason::None).display())?;
+        writeln!(f, "{INDENT3}trickle upload pending: {}", project.trickle_up_pending)?;
+        writeln!(f, "{INDENT3}attached via Account Manager: {}", project.attached_via_acct_mgr)?;
+        writeln!(f, "{INDENT3}ended: {}", project.ended)?;
+        writeln!(f, "{INDENT3}suspended via GUI: {}", project.suspended_via_gui)?;
+        writeln!(f, "{INDENT3}don't request more work: {}", project.dont_request_more_work)?;
+        writeln!(f, "{INDENT3}disk usage: {}", Usage(project.disk_usage))?;
+        writeln!(f, "{INDENT3}last RPC: {}", FormattedTimestamp::new(project.last_rpc_time))?;
         writeln!(f)?;
-        writeln!(f, "{INDENT}project files downloaded: {}", FormattedTimestamp::new(project.project_files_downloaded_time))?;
+        writeln!(f, "{INDENT3}project files downloaded: {}", FormattedTimestamp::new(project.project_files_downloaded_time))?;
 
         for gui_url in &project.gui_urls.0 {
             writeln!(f, "GUI URL:")?;
-            writeln!(f, "{INDENT}name: {}", gui_url.name)?;
-            writeln!(f, "{INDENT}description: {}", gui_url.description)?;
-            writeln!(f, "{INDENT}URL: {}", gui_url.url)?;
+            writeln!(f, "{INDENT3}name: {}", gui_url.name)?;
+            writeln!(f, "{INDENT3}description: {}", gui_url.description)?;
+            writeln!(f, "{INDENT3}URL: {}", gui_url.url)?;
         }
 
-        writeln!(f, "{INDENT}jobs succeeded: {}", project.njobs_success)?;
-        writeln!(f, "{INDENT}jobs failed: {}", project.njobs_error)?;
-        writeln!(f, "{INDENT}elapsed time: {}", project.elapsed_time)?;
-        writeln!(f, "{INDENT}cross-project ID: {}", project.external_cpid)?;
+        writeln!(f, "{INDENT3}jobs succeeded: {}", project.njobs_success)?;
+        writeln!(f, "{INDENT3}jobs failed: {}", project.njobs_error)?;
+        writeln!(f, "{INDENT3}elapsed time: {}", project.elapsed_time)?;
+        writeln!(f, "{INDENT3}cross-project ID: {}", project.external_cpid)?;
 
         Ok(())
     }
@@ -359,8 +356,6 @@ impl fmt::Display for Displayable<&Project> {
 
 impl fmt::Display for Displayable<&Task> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        const INDENT: &str = "   ";
-
         let task = &self.0;
         let scheduler_state = task
             .active_task
@@ -371,53 +366,53 @@ impl fmt::Display for Displayable<&Task> {
             .as_ref()
             .map_or(ActiveTaskState::Uninitialized, |at| at.active_task_state.clone());
 
-        writeln!(f, "{INDENT}name: {}", task.name)?;
-        writeln!(f, "{INDENT}WU name: {}", task.wu_name)?;
-        writeln!(f, "{INDENT}project URL: {}", task.project_url)?;
-        writeln!(f, "{INDENT}received: {}", FormattedTimestamp::new(task.received_time))?;
-        writeln!(f, "{INDENT}report deadline: {}", FormattedTimestamp::new(task.report_deadline))?;
-        writeln!(f, "{INDENT}ready to report: {}", task.ready_to_report)?;
-        writeln!(f, "{INDENT}state: {}", task.state)?;
-        writeln!(f, "{INDENT}scheduler state: {}", scheduler_state)?;
-        writeln!(f, "{INDENT}active_task_state: {}", active_task_state)?;
-        writeln!(f, "{INDENT}app version num: {}", task.version_num)?;
-        writeln!(f, "{INDENT}resources: {}",
+        writeln!(f, "{INDENT3}name: {}", task.name)?;
+        writeln!(f, "{INDENT3}WU name: {}", task.wu_name)?;
+        writeln!(f, "{INDENT3}project URL: {}", task.project_url)?;
+        writeln!(f, "{INDENT3}received: {}", FormattedTimestamp::new(task.received_time))?;
+        writeln!(f, "{INDENT3}report deadline: {}", FormattedTimestamp::new(task.report_deadline))?;
+        writeln!(f, "{INDENT3}ready to report: {}", task.ready_to_report)?;
+        writeln!(f, "{INDENT3}state: {}", task.state)?;
+        writeln!(f, "{INDENT3}scheduler state: {}", scheduler_state)?;
+        writeln!(f, "{INDENT3}active_task_state: {}", active_task_state)?;
+        writeln!(f, "{INDENT3}app version num: {}", task.version_num)?;
+        writeln!(f, "{INDENT3}resources: {}",
             Some(task.resources.as_str()).filter(|rs| !rs.is_empty()).get_or_insert("1 CPU"))?;
 
         if task.state as isize >= 0
             && task.state as isize <= ResultClientState::FilesDownloaded as isize
         {
             if task.suspended_via_gui.into() {
-                writeln!(f, "{INDENT}suspended via GUI: yes")?;
+                writeln!(f, "{INDENT3}suspended via GUI: yes")?;
             }
-            writeln!(f, "{INDENT}estimated CPU time remaining: {:.6}", task.estimated_cpu_time_remaining)?;
+            writeln!(f, "{INDENT3}estimated CPU time remaining: {:.6}", task.estimated_cpu_time_remaining)?;
             if let Some(active_task) = &task.active_task {
-                writeln!(f, "{INDENT}elapsed task time: {:.6}", active_task.elapsed_time)?;
+                writeln!(f, "{INDENT3}elapsed task time: {:.6}", active_task.elapsed_time)?;
             }
         }
 
         if scheduler_state as isize > SchedulerState::Uninitialized as isize {
             if let Some(active_task) = &task.active_task {
-                writeln!(f, "{INDENT}slot: {}", active_task.slot)?;
-                writeln!(f, "{INDENT}PID: {}", active_task.pid)?;
-                writeln!(f, "{INDENT}CPU time at last checkpoint: {:.6}", active_task.checkpoint_cpu_time)?;
-                writeln!(f, "{INDENT}current CPU time: {:.6}", active_task.current_cpu_time)?;
-                writeln!(f, "{INDENT}fraction done: {:.6}", active_task.fraction_done)?;
-                writeln!(f, "{INDENT}swap size: {:.0} MB", to_mibi(active_task.swap_size))?;
-                writeln!(f, "{INDENT}working set size: {:.0} MB", to_mibi(active_task.working_set_size_smoothed))?;
+                writeln!(f, "{INDENT3}slot: {}", active_task.slot)?;
+                writeln!(f, "{INDENT3}PID: {}", active_task.pid)?;
+                writeln!(f, "{INDENT3}CPU time at last checkpoint: {:.6}", active_task.checkpoint_cpu_time)?;
+                writeln!(f, "{INDENT3}current CPU time: {:.6}", active_task.current_cpu_time)?;
+                writeln!(f, "{INDENT3}fraction done: {:.6}", active_task.fraction_done)?;
+                writeln!(f, "{INDENT3}swap size: {:.0} MB", to_mibi(active_task.swap_size))?;
+                writeln!(f, "{INDENT3}working set size: {:.0} MB", to_mibi(active_task.working_set_size_smoothed))?;
 
                 if active_task.bytes_sent > 0. || active_task.bytes_received > 0. {
-                    writeln!(f, "{INDENT}bytes sent: {:.0} received: {:.0}",
+                    writeln!(f, "{INDENT3}bytes sent: {:.0} received: {:.0}",
                         active_task.bytes_sent, active_task.bytes_received)?;
                 }
             }
         }
 
         if task.state as isize > ResultClientState::FilesDownloaded as isize {
-            writeln!(f, "{INDENT}final CPU time: {}", task.final_cpu_time)?;
-            writeln!(f, "{INDENT}final elapsed time: {}", task.final_elapsed_time)?;
-            writeln!(f, "{INDENT}exit_status: {}", task.exit_status)?;
-            writeln!(f, "{INDENT}signal: {}", task.signal)?;
+            writeln!(f, "{INDENT3}final CPU time: {}", task.final_cpu_time)?;
+            writeln!(f, "{INDENT3}final elapsed time: {}", task.final_elapsed_time)?;
+            writeln!(f, "{INDENT3}exit_status: {}", task.exit_status)?;
+            writeln!(f, "{INDENT3}signal: {}", task.signal)?;
         }
 
         Ok(())
