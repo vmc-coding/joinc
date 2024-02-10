@@ -30,20 +30,20 @@ pub struct ActiveTask {
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 pub struct CCStatus {
-	pub gpu_mode: RunMode,
-	pub gpu_mode_delay: f64,
-	pub gpu_mode_perm: RunMode,
-	pub gpu_suspend_reason: SuspendReason,
+    pub gpu_mode: RunMode,
+    pub gpu_mode_delay: f64,
+    pub gpu_mode_perm: RunMode,
+    pub gpu_suspend_reason: SuspendReason,
 
-	pub network_mode: RunMode,
-	pub network_mode_delay: f64,
-	pub network_mode_perm: RunMode,
-	pub network_suspend_reason: SuspendReason,
+    pub network_mode: RunMode,
+    pub network_mode_delay: f64,
+    pub network_mode_perm: RunMode,
+    pub network_suspend_reason: SuspendReason,
 
-	pub task_mode: RunMode,
-	pub task_mode_delay: f64,
-	pub task_mode_perm: RunMode,
-	pub task_suspend_reason: SuspendReason,
+    pub task_mode: RunMode,
+    pub task_mode_delay: f64,
+    pub task_mode_perm: RunMode,
+    pub task_suspend_reason: SuspendReason,
 
     pub ams_password_error: Bool,
     pub disallow_attach: Bool,
