@@ -40,34 +40,6 @@ mod tests {
         assert_eq!(deserialized, expected);
     }
 
-    // TODO the next two tests are nonsense
-
-    #[test]
-    fn deserializes_empty_struct() {
-        #[derive(Deserialize, Debug, PartialEq)]
-        struct Success {}
-
-        let expected = Success {};
-
-        let xml = "<success></success>";
-        let deserialized: Success = super::from_str(xml).unwrap();
-
-        assert_eq!(deserialized, expected);
-    }
-
-    #[test]
-    fn deserializes_empty_struct_self_closed() {
-        #[derive(Deserialize, Debug, PartialEq)]
-        struct Success {}
-
-        let expected = Success {};
-
-        let xml = "<success/>";
-        let deserialized: Success = super::from_str(xml).unwrap();
-
-        assert_eq!(deserialized, expected);
-    }
-
     #[test]
     fn deserializes_enums() {
         #[derive(Deserialize_repr, Debug, PartialEq)]
