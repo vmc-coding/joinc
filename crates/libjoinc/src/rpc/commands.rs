@@ -164,7 +164,7 @@ impl Command<CCStatus> for GetCCStatusCommand {
 
 #[derive(Default, Deserialize)]
 struct FileTransfersDto {
-    file_transfer: Vec<FileTransfer>,
+    file_transfer: Option<Vec<FileTransfer>>,
 }
 
 #[derive(Default, Deserialize, Serialize)]
@@ -177,7 +177,7 @@ pub struct GetFileTransfersCommand {
 impl Command<Vec<FileTransfer>> for GetFileTransfersCommand {
     fn execute(&mut self, connection: &mut Connection) -> Result<Vec<FileTransfer>> {
         let response: Self = execute_rpc_operation(connection, self)?;
-        Ok(response.file_transfers.file_transfer)
+        Ok(response.file_transfers.file_transfer.unwrap_or_default())
     }
 }
 
@@ -185,7 +185,7 @@ impl Command<Vec<FileTransfer>> for GetFileTransfersCommand {
 
 #[derive(Default, Deserialize)]
 struct MessagesDto {
-    msg: Vec<Message>,
+    msg: Option<Vec<Message>>,
 }
 
 #[derive(Default, Deserialize, Serialize)]
@@ -201,7 +201,7 @@ impl GetMessagesCommand {
     pub fn new(seqno: u32) -> Self {
         Self {
             seqno,
-            msgs: MessagesDto { msg: vec![] },
+            msgs: MessagesDto { msg: None },
         }
     }
 }
@@ -209,7 +209,7 @@ impl GetMessagesCommand {
 impl Command<Vec<Message>> for GetMessagesCommand {
     fn execute(&mut self, connection: &mut Connection) -> Result<Vec<Message>> {
         let response: Self = execute_rpc_operation(connection, self)?;
-        Ok(response.msgs.msg)
+        Ok(response.msgs.msg.unwrap_or_default())
     }
 }
 
@@ -217,7 +217,7 @@ impl Command<Vec<Message>> for GetMessagesCommand {
 
 #[derive(Default, Deserialize)]
 struct NoticesDto {
-    notice: Vec<Notice>,
+    notice: Option<Vec<Notice>>,
 }
 
 #[derive(Default, Deserialize, Serialize)]
@@ -233,7 +233,7 @@ impl GetNoticesCommand {
     pub fn new(seqno: u32) -> Self {
         Self {
             seqno,
-            notices: NoticesDto { notice: vec![] },
+            notices: NoticesDto { notice: None },
         }
     }
 }
@@ -241,7 +241,7 @@ impl GetNoticesCommand {
 impl Command<Vec<Notice>> for GetNoticesCommand {
     fn execute(&mut self, connection: &mut Connection) -> Result<Vec<Notice>> {
         let response: Self = execute_rpc_operation(connection, self)?;
-        Ok(response.notices.notice)
+        Ok(response.notices.notice.unwrap_or_default())
     }
 }
 
@@ -249,7 +249,7 @@ impl Command<Vec<Notice>> for GetNoticesCommand {
 
 #[derive(Default, Deserialize)]
 struct ProjectsDto {
-    project: Vec<Project>,
+    project: Option<Vec<Project>>,
 }
 
 #[derive(Default, Deserialize, Serialize)]
@@ -262,7 +262,7 @@ pub struct GetProjectStatusCommand {
 impl Command<Vec<Project>> for GetProjectStatusCommand {
     fn execute(&mut self, connection: &mut Connection) -> Result<Vec<Project>> {
         let response: Self = execute_rpc_operation(connection, self)?;
-        Ok(response.projects.project)
+        Ok(response.projects.project.unwrap_or_default())
     }
 }
 
@@ -270,7 +270,7 @@ impl Command<Vec<Project>> for GetProjectStatusCommand {
 
 #[derive(Default, Deserialize)]
 struct ResultsDto {
-    result: Vec<Task>,
+    result: Option<Vec<Task>>,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -286,7 +286,7 @@ impl GetResultsCommand {
     pub fn new(active_only: bool) -> Self {
         Self {
             active_only,
-            results: ResultsDto { result: vec![] },
+            results: ResultsDto { result: None },
         }
     }
 }
@@ -294,7 +294,7 @@ impl GetResultsCommand {
 impl Command<Vec<Task>> for GetResultsCommand {
     fn execute(&mut self, connection: &mut Connection) -> Result<Vec<Task>> {
         let response: Self = execute_rpc_operation(connection, self)?;
-        Ok(response.results.result)
+        Ok(response.results.result.unwrap_or_default())
     }
 }
 
