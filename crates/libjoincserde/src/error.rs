@@ -27,9 +27,9 @@ impl de::Error for Error {
 impl Display for Error {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            Error::IllegalState => formatter.write_str("Logical error in the serde logic, please contact the developers of joinc."),
+            Error::Io(io_err) => formatter.write_str(&format!("Io error in serde: {}", io_err)),
             Error::UnexpectedXml(msg) => formatter.write_str(msg),
-            // TODO implement this
-            _ => formatter.write_str(&format!("{:?}", self)),
         }
     }
 }
