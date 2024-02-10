@@ -55,6 +55,36 @@ pub struct CCStatus {
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
+pub struct FileTransfer {
+    pub sticky: Bool,
+
+    pub nbytes: f64,
+    pub project_backoff: f64, // in seconds
+    pub max_nbytes: f64,
+
+    pub status: i32,
+
+    pub name: String,
+    pub project_name: String,
+    pub project_url: String,
+
+    pub file_xfer: Option<FileXfer>,
+    pub persistent_file_xfer: Option<PersistentFileXfer>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+pub struct FileXfer {
+    pub bytes_xferred: f64,
+    pub estimated_xfer_time_remaining: f64,
+    pub xfer_speed: f64,
+    pub file_offset: f64,
+
+    pub url: String,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
 pub struct GuiUrl {
     pub name: String,
     pub description: String,
@@ -104,6 +134,19 @@ pub struct Notice {
     pub title: String,
 
     pub is_private: Bool,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+pub struct PersistentFileXfer {
+    pub is_upload: Bool,
+
+    pub first_request_time: f64,
+    pub last_bytes_xferred: f64,
+    pub next_request_time: f64,
+    pub time_so_far: f64,
+
+    pub num_retries: i32,
 }
 
 #[derive(Debug, Default, Deserialize)]

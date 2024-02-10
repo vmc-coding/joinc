@@ -160,6 +160,27 @@ impl Command<CCStatus> for GetCCStatusCommand {
     }
 }
 
+// ----- GetFileTransfersCommand -----
+
+#[derive(Default, Deserialize)]
+struct FileTransfersDto {
+    file_transfer: Vec<FileTransfer>,
+}
+
+#[derive(Default, Deserialize, Serialize)]
+#[serde(rename(serialize = "get_file_transfers"))]
+pub struct GetFileTransfersCommand {
+    #[serde(skip_serializing)]
+    file_transfers: FileTransfersDto,
+}
+
+impl Command<Vec<FileTransfer>> for GetFileTransfersCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<Vec<FileTransfer>> {
+        let response: Self = execute_rpc_operation(connection, self)?;
+        Ok(response.file_transfers.file_transfer)
+    }
+}
+
 // ----- GetMessagesCommand -----
 
 #[derive(Default, Deserialize)]
