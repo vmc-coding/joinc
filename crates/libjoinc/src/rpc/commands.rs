@@ -28,18 +28,18 @@ struct SuccessReply {
     _success: String,
 }
 
-fn execute_rpc_operation<REQ, RESP>(connection: &mut Connection, request: &REQ) -> Result<RESP>
+fn execute_preprocessed_rpc_operation<REQ, RESP, PREPROCESSOR>(connection: &mut Connection, request: &REQ, pre_processor: PREPROCESSOR) -> Result<RESP>
 where
     REQ: Serialize,
     RESP: for<'de> Deserialize<'de>,
+    PREPROCESSOR: Fn(String) -> String
 {
     let raw_response = connection.do_rpc(&to_vec(request)?)?;
-    // the root tag is a workaround for proper expected tag matching during deserialization
-    let response = "<root>".to_string()
-        + &String::from_utf8(raw_response)
-            .map_err(|_| Error::Rpc("Recieved a non-UTF8 response from the client".to_string()))?
-        + "</root>";
+    let pre_processed = pre_processor(String::from_utf8(raw_response)
+        .map_err(|_| Error::Rpc("Recieved a non-UTF8 response from the client".to_string()))?);
 
+    // the root tag is a workaround for proper expected tag matching during deserialization
+    let response = "<root>".to_string() + &pre_processed + "</root>";
     match from_str(&response) {
         Ok(deserialized) => Ok(deserialized),
         Err(de_err) => match from_str::<ErrorReply>(&response) {
@@ -50,6 +50,14 @@ where
             },
         },
     }
+}
+
+fn execute_rpc_operation<REQ, RESP>(connection: &mut Connection, request: &REQ) -> Result<RESP>
+where
+    REQ: Serialize,
+    RESP: for<'de> Deserialize<'de>,
+{
+    execute_preprocessed_rpc_operation(connection, request, |s| s)
 }
 
 // ----- AuthorizeCommand -----
@@ -261,7 +269,8 @@ pub struct GetProjectStatusCommand {
 
 impl Command<Vec<Project>> for GetProjectStatusCommand {
     fn execute(&mut self, connection: &mut Connection) -> Result<Vec<Project>> {
-        let response: Self = execute_rpc_operation(connection, self)?;
+        let response: Self = execute_preprocessed_rpc_operation(
+            connection, self, |s| s.replace("<ifteam>", "").replace("</ifteam>", ""))?;
         Ok(response.projects.project.unwrap_or_default())
     }
 }
