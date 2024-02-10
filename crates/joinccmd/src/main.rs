@@ -319,11 +319,11 @@ impl fmt::Display for Displayable<Project> {
         writeln!(f, "{INDENT3}master URL: {}", project.master_url)?;
         writeln!(f, "{INDENT3}user_name: {}", project.user_name)?;
         writeln!(f, "{INDENT3}team_name: {}", project.team_name)?;
-        writeln!(f, "{INDENT3}resource share: {}", project.resource_share)?;
-        writeln!(f, "{INDENT3}user_total_credit: {}", project.user_total_credit)?;
-        writeln!(f, "{INDENT3}user_expavg_credit: {}", project.user_expavg_credit)?;
-        writeln!(f, "{INDENT3}host_total_credit: {}", project.host_total_credit)?;
-        writeln!(f, "{INDENT3}host_expavg_credit: {}", project.host_expavg_credit)?;
+        writeln!(f, "{INDENT3}resource share: {:.6}", project.resource_share)?;
+        writeln!(f, "{INDENT3}user_total_credit: {:.6}", project.user_total_credit)?;
+        writeln!(f, "{INDENT3}user_expavg_credit: {:.6}", project.user_expavg_credit)?;
+        writeln!(f, "{INDENT3}host_total_credit: {:.6}", project.host_total_credit)?;
+        writeln!(f, "{INDENT3}host_expavg_credit: {:.6}", project.host_expavg_credit)?;
         writeln!(f, "{INDENT3}nrpc_failures: {}", project.nrpc_failures)?;
         writeln!(f, "{INDENT3}master_fetch_failures: {}", project.master_fetch_failures)?;
         writeln!(f, "{INDENT3}master fetch pending: {}", project.master_url_fetch_pending)?;
@@ -347,7 +347,7 @@ impl fmt::Display for Displayable<Project> {
 
         writeln!(f, "{INDENT3}jobs succeeded: {}", project.njobs_success)?;
         writeln!(f, "{INDENT3}jobs failed: {}", project.njobs_error)?;
-        writeln!(f, "{INDENT3}elapsed time: {}", project.elapsed_time)?;
+        writeln!(f, "{INDENT3}elapsed time: {:.6}", project.elapsed_time)?;
         writeln!(f, "{INDENT3}cross-project ID: {}", project.external_cpid)?;
 
         Ok(())
@@ -409,8 +409,8 @@ impl fmt::Display for Displayable<Task> {
         }
 
         if task.state as isize > ResultClientState::FilesDownloaded as isize {
-            writeln!(f, "{INDENT3}final CPU time: {}", task.final_cpu_time)?;
-            writeln!(f, "{INDENT3}final elapsed time: {}", task.final_elapsed_time)?;
+            writeln!(f, "{INDENT3}final CPU time: {:.6}", task.final_cpu_time)?;
+            writeln!(f, "{INDENT3}final elapsed time: {:.6}", task.final_elapsed_time)?;
             writeln!(f, "{INDENT3}exit_status: {}", task.exit_status)?;
             writeln!(f, "{INDENT3}signal: {}", task.signal)?;
         }
