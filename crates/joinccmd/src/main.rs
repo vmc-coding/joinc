@@ -387,7 +387,7 @@ impl fmt::Display for Displayable<Task> {
             }
             writeln!(f, "{INDENT3}estimated CPU time remaining: {:.6}", task.estimated_cpu_time_remaining.0)?;
             if let Some(active_task) = &task.active_task {
-                writeln!(f, "{INDENT3}elapsed task time: {:.6}", active_task.elapsed_time)?;
+                writeln!(f, "{INDENT3}elapsed task time: {:.6}", active_task.elapsed_time.0)?;
             }
         }
 
@@ -395,8 +395,8 @@ impl fmt::Display for Displayable<Task> {
             if let Some(active_task) = &task.active_task {
                 writeln!(f, "{INDENT3}slot: {}", active_task.slot)?;
                 writeln!(f, "{INDENT3}PID: {}", active_task.pid)?;
-                writeln!(f, "{INDENT3}CPU time at last checkpoint: {:.6}", active_task.checkpoint_cpu_time)?;
-                writeln!(f, "{INDENT3}current CPU time: {:.6}", active_task.current_cpu_time)?;
+                writeln!(f, "{INDENT3}CPU time at last checkpoint: {:.6}", active_task.checkpoint_cpu_time.0)?;
+                writeln!(f, "{INDENT3}current CPU time: {:.6}", active_task.current_cpu_time.0)?;
                 writeln!(f, "{INDENT3}fraction done: {:.6}", active_task.fraction_done)?;
                 writeln!(f, "{INDENT3}swap size: {:.0} MB", to_mibi(active_task.swap_size))?;
                 writeln!(f, "{INDENT3}working set size: {:.0} MB", to_mibi(active_task.working_set_size_smoothed))?;
