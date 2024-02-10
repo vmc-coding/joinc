@@ -34,6 +34,8 @@ enum CliCommand {
     ClientVersion,
     /// Show cc status
     GetCCStatus,
+    /// Show file transfers
+    GetFileTransfers,
     /// Show messages
     GetMessages {
         /// Show messages with sequence number > seqno only
@@ -97,6 +99,13 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
         CliCommand::GetCCStatus => {
             print!("{}", GetCCStatusCommand::default().execute(connection)?.display());
         }
+        CliCommand::GetFileTransfers => {
+            println!("======== File transfers ========");
+            for (idx, file_transfer) in GetFileTransfersCommand::default().execute(connection)?.iter().enumerate() {
+                println!("{}) -----------", idx + 1);
+                print!("{}", file_transfer.display());
+            }
+        }
         CliCommand::GetMessages { seqno } => {
             for msg in GetMessagesCommand::new(seqno).execute(connection)? {
                 println!("{}", msg.display());
@@ -109,22 +118,14 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
         }
         CliCommand::GetProjects => {
             println!("======== Projects ========");
-            for (idx, project) in GetProjectStatusCommand::default()
-                .execute(connection)?
-                .iter()
-                .enumerate()
-            {
+            for (idx, project) in GetProjectStatusCommand::default().execute(connection)?.iter().enumerate() {
                 println!("{}) -----------", idx + 1);
                 print!("{}", project.display());
             }
         }
         CliCommand::GetTasks { active_only } => {
-            println!("\n======== Tasks ========");
-            for (idx, task) in GetResultsCommand::new(active_only)
-                .execute(connection)?
-                .iter()
-                .enumerate()
-            {
+            println!("======== Tasks ========");
+            for (idx, task) in GetResultsCommand::new(active_only).execute(connection)?.iter().enumerate() {
                 println!("{}) -----------", idx + 1);
                 print!("{}", task.display());
             }
@@ -249,6 +250,43 @@ impl fmt::Display for Displayable<Error> {
             Error::Rpc(rpc_err) => write!(f, "RPC error: {}.", rpc_err),
             Error::Unauthorized => write!(f, "Unauthorized, please set the password via --passwd <PASSWD>."),
         }
+    }
+}
+
+impl fmt::Display for Displayable<&FileTransfer> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        const INDENT: &str = "   ";
+        let mut direction = "unknown";
+        let mut is_active = false;
+        let mut time_so_far = 0f64;
+        let mut bytes_xferred = 0f64;
+        let mut xfer_speed = 0f64;
+        let mut estimated_xfer_time_remaining = 0f64;
+
+        if let Some(pfx) = &self.0.persistent_file_xfer {
+            direction = if pfx.is_upload.into() { "upload" } else { "download" };
+            time_so_far = pfx.time_so_far;
+        }
+
+        if let Some(xfer) = &self.0.file_xfer {
+            is_active = true;
+            bytes_xferred = xfer.bytes_xferred;
+            xfer_speed = xfer.xfer_speed;
+            estimated_xfer_time_remaining = xfer.estimated_xfer_time_remaining;
+        }
+
+        writeln!(f, "{INDENT}name: {}", self.0.name)?;
+        writeln!(f, "{INDENT}direction: {}", direction)?;
+        writeln!(f, "{INDENT}sticky: {}", self.0.sticky)?;
+        writeln!(f, "{INDENT}xfer active: {}", is_active.display())?;
+        writeln!(f, "{INDENT}time_so_far: {:.6}", time_so_far)?;
+        if is_active {
+            writeln!(f, "{INDENT}estimated_xfer_time_remaining: {:.6}", estimated_xfer_time_remaining)?;
+        }
+        writeln!(f, "{INDENT}bytes_xferred: {:.6}", bytes_xferred)?;
+        writeln!(f, "{INDENT}xfer_speed: {:.6}", xfer_speed)?;
+
+        Ok(())
     }
 }
 
