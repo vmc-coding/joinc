@@ -103,7 +103,7 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
         }
         CliCommand::GetFileTransfers => {
             println!("======== File transfers ========");
-            for (idx, file_transfer) in GetFileTransfersCommand::default().execute(connection)?.iter().enumerate() {
+            for (idx, file_transfer) in GetFileTransfersCommand::default().execute(connection)?.into_iter().enumerate() {
                 println!("{}) -----------", idx + 1);
                 print!("{}", file_transfer.display());
             }
@@ -120,14 +120,14 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
         }
         CliCommand::GetProjects => {
             println!("======== Projects ========");
-            for (idx, project) in GetProjectStatusCommand::default().execute(connection)?.iter().enumerate() {
+            for (idx, project) in GetProjectStatusCommand::default().execute(connection)?.into_iter().enumerate() {
                 println!("{}) -----------", idx + 1);
                 print!("{}", project.display());
             }
         }
         CliCommand::GetTasks { active_only } => {
             println!("======== Tasks ========");
-            for (idx, task) in GetResultsCommand::new(active_only).execute(connection)?.iter().enumerate() {
+            for (idx, task) in GetResultsCommand::new(active_only).execute(connection)?.into_iter().enumerate() {
                 println!("{}) -----------", idx + 1);
                 print!("{}", task.display());
             }
@@ -253,7 +253,7 @@ impl fmt::Display for Displayable<Error> {
     }
 }
 
-impl fmt::Display for Displayable<&FileTransfer> {
+impl fmt::Display for Displayable<FileTransfer> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut direction = "unknown";
         let mut is_active = false;
@@ -311,7 +311,7 @@ impl fmt::Display for Displayable<Notice> {
     }
 }
 
-impl fmt::Display for Displayable<&Project> {
+impl fmt::Display for Displayable<Project> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let project = &self.0;
 
@@ -354,7 +354,7 @@ impl fmt::Display for Displayable<&Project> {
     }
 }
 
-impl fmt::Display for Displayable<&Task> {
+impl fmt::Display for Displayable<Task> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let task = &self.0;
         let scheduler_state = task
