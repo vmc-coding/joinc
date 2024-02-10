@@ -11,18 +11,20 @@ pub struct ActiveTask {
     pub needs_shmem: Bool,
     pub too_large: Bool,
 
+    pub current_cpu_time: Duration,
+    pub elapsed_time: Duration,
+
     pub pid: i32,
     pub slot: i32,
 
     pub bytes_received: f64,
     pub bytes_sent: f64,
-    pub checkpoint_cpu_time: f64,
-    pub current_cpu_time: f64,
-    pub elapsed_time: f64,
     pub fraction_done: f64,
     pub progress_rate: f64,
     pub swap_size: f64,
     pub working_set_size_smoothed: f64,
+
+    pub checkpoint_cpu_time: Timestamp,
 }
 
 #[derive(Debug, Default, Deserialize)]
