@@ -25,7 +25,7 @@ As rust builds statically linked binaries, there aren't any known runtime depend
 ### compiletime
 
 - [rustc and cargo](https://www.rust-lang.org/):
-    I don't know the minimum version needed, I'm using rustc/cargo v1.74.1 at the moment.
+    I don't know the minimum version needed, I'm using rustc/cargo v1.76.0 at the moment.
     You may want to use [rustup](https://www.rust-lang.org/tools/install) to install the toolchain.
 
 ## building
