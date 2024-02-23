@@ -63,6 +63,8 @@ enum CliCommand {
     NetworkAvailable,
     /// Read the cc_config.xml file
     ReadCcConfig,
+    /// Read the global_prefs_override.xml file
+    ReadGlobalPrefsOverride,
     /// Show the verion of this cli
     Version,
 }
@@ -136,6 +138,7 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
         }
         CliCommand::NetworkAvailable => NetworkAvailableCommand::default().execute(connection)?,
         CliCommand::ReadCcConfig => ReadCCConfigCommand::default().execute(connection)?,
+        CliCommand::ReadGlobalPrefsOverride => ReadGlobalPreferencesOverrideCommand::default().execute(connection)?,
         CliCommand::Version => panic!("Should've never reached this line"),
     };
 
