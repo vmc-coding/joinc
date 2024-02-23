@@ -307,6 +307,19 @@ impl Command<Vec<Task>> for GetResultsCommand {
     }
 }
 
+// ----- NetworkAvailableCommand -----
+
+#[derive(Default, Serialize)]
+#[serde(rename(serialize = "network_available"))]
+pub struct NetworkAvailableCommand {}
+
+impl Command<()> for NetworkAvailableCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<()> {
+        let _: SuccessReply = execute_rpc_operation(connection, self)?;
+        Ok(())
+    }
+}
+
 // ----- ReadCCConfigCommand -----
 
 #[derive(Default, Serialize)]
