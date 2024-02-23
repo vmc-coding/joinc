@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use libjoinc::defs::*;
 use libjoinc::error::*;
 use libjoinc::rpc::commands::*;
@@ -69,6 +69,15 @@ enum CliCommand {
     ReadGlobalPrefsOverride,
     /// Run the benchmarks
     RunBenchmarks,
+    /// Set run mode for given duration
+    SetRunMode {
+        /// The mode to run
+        #[arg(value_enum)]
+        mode: SupportedRunMode,
+        /// The duration this mode to be set
+        #[arg(default_value = "0")]
+        duration: f64,
+    },
     /// Show the verion of this cli
     Version,
 }
@@ -145,10 +154,30 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
         CliCommand::ReadCcConfig => ReadCCConfigCommand::default().execute(connection)?,
         CliCommand::ReadGlobalPrefsOverride => ReadGlobalPreferencesOverrideCommand::default().execute(connection)?,
         CliCommand::RunBenchmarks => RunBenchmarksCommand::default().execute(connection)?,
+        CliCommand::SetRunMode { mode, duration } => SetRunModeCommand::new(mode.into(), duration).execute(connection)?,
         CliCommand::Version => panic!("Should've never reached this line"),
     };
 
     Ok(())
+}
+
+// ----- helpers for parsing cli parameters -----
+
+#[derive(Clone, PartialEq, ValueEnum)]
+enum SupportedRunMode {
+    Always,
+    Auto,
+    Never,
+}
+
+impl From<SupportedRunMode> for RunMode {
+    fn from(mode: SupportedRunMode) -> Self {
+        match mode {
+            SupportedRunMode::Always => RunMode::Always,
+            SupportedRunMode::Auto => RunMode::Auto,
+            SupportedRunMode::Never => RunMode::Never,
+        }
+    }
 }
 
 // ----- unit conversions -----
