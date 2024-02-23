@@ -59,6 +59,8 @@ enum CliCommand {
         #[arg(long)]
         active_only: bool,
     },
+    /// Retry deferred network communication
+    NetworkAvailable,
     /// Read the cc_config.xml file
     ReadCcConfig,
     /// Show the verion of this cli
@@ -132,6 +134,7 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
                 print!("{}", task.display());
             }
         }
+        CliCommand::NetworkAvailable => NetworkAvailableCommand::default().execute(connection)?,
         CliCommand::ReadCcConfig => ReadCCConfigCommand::default().execute(connection)?,
         CliCommand::Version => panic!("Should've never reached this line"),
     };
