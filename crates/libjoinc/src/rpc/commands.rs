@@ -396,6 +396,29 @@ impl Command<()> for SetGpuModeCommand {
     }
 }
 
+// ----- SetNetworkModeCommand -----
+
+#[derive(Default, Serialize)]
+#[serde(rename(serialize = "set_network_mode"))]
+pub struct SetNetworkModeCommand {
+    mode: RunMode,
+    duration: f64,
+}
+
+impl SetNetworkModeCommand {
+    pub fn new(mode: RunMode, duration: f64) -> Self {
+        assert!(mode != RunMode::UnknownToJoinc);
+        Self { mode, duration }
+    }
+}
+
+impl Command<()> for SetNetworkModeCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<()> {
+        let _: SuccessReply = execute_rpc_operation(connection, self)?;
+        Ok(())
+    }
+}
+
 // ----- SetRunModeCommand -----
 
 #[derive(Default, Serialize)]
