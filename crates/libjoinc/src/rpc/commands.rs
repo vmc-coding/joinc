@@ -373,6 +373,29 @@ impl Command<()> for QuitCommand {
     }
 }
 
+// ----- SetGpuModeCommand -----
+
+#[derive(Default, Serialize)]
+#[serde(rename(serialize = "set_gpu_mode"))]
+pub struct SetGpuModeCommand {
+    mode: RunMode,
+    duration: f64,
+}
+
+impl SetGpuModeCommand {
+    pub fn new(mode: RunMode, duration: f64) -> Self {
+        assert!(mode != RunMode::UnknownToJoinc);
+        Self { mode, duration }
+    }
+}
+
+impl Command<()> for SetGpuModeCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<()> {
+        let _: SuccessReply = execute_rpc_operation(connection, self)?;
+        Ok(())
+    }
+}
+
 // ----- SetRunModeCommand -----
 
 #[derive(Default, Serialize)]
