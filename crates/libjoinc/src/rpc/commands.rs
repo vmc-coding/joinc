@@ -345,3 +345,16 @@ impl Command<()> for ReadGlobalPreferencesOverrideCommand {
         Ok(())
     }
 }
+
+// ----- RunBenchmarksCommand -----
+
+#[derive(Default, Serialize)]
+#[serde(rename(serialize = "run_benchmarks"))]
+pub struct RunBenchmarksCommand {}
+
+impl Command<()> for RunBenchmarksCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<()> {
+        let _: SuccessReply = execute_rpc_operation(connection, self)?;
+        Ok(())
+    }
+}
