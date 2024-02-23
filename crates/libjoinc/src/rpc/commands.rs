@@ -358,3 +358,16 @@ impl Command<()> for RunBenchmarksCommand {
         Ok(())
     }
 }
+
+// ----- QuitCommand -----
+
+#[derive(Default, Serialize)]
+#[serde(rename(serialize = "quit"))]
+pub struct QuitCommand {}
+
+impl Command<()> for QuitCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<()> {
+        let _: SuccessReply = execute_rpc_operation(connection, self)?;
+        Ok(())
+    }
+}
