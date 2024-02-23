@@ -61,6 +61,8 @@ enum CliCommand {
     },
     /// Retry deferred network communication
     NetworkAvailable,
+    /// Tell the client to quit
+    Quit,
     /// Read the cc_config.xml file
     ReadCcConfig,
     /// Read the global_prefs_override.xml file
@@ -139,6 +141,7 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
             }
         }
         CliCommand::NetworkAvailable => NetworkAvailableCommand::default().execute(connection)?,
+        CliCommand::Quit => QuitCommand::default().execute(connection)?,
         CliCommand::ReadCcConfig => ReadCCConfigCommand::default().execute(connection)?,
         CliCommand::ReadGlobalPrefsOverride => ReadGlobalPreferencesOverrideCommand::default().execute(connection)?,
         CliCommand::RunBenchmarks => RunBenchmarksCommand::default().execute(connection)?,
