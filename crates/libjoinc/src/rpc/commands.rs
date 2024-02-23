@@ -332,3 +332,16 @@ impl Command<()> for ReadCCConfigCommand {
         Ok(())
     }
 }
+
+// ----- ReadGlobalPreferencesOverrideCommand -----
+
+#[derive(Default, Serialize)]
+#[serde(rename(serialize = "read_global_prefs_override"))]
+pub struct ReadGlobalPreferencesOverrideCommand {}
+
+impl Command<()> for ReadGlobalPreferencesOverrideCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<()> {
+        let _: SuccessReply = execute_rpc_operation(connection, self)?;
+        Ok(())
+    }
+}
