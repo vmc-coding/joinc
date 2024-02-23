@@ -179,9 +179,11 @@ where
         self,
         _name: &'static str,
         _variant_index: u32,
-        _variant: &'static str,
+        variant: &'static str,
     ) -> Result<()> {
-        unimplemented!()
+        self.formatter
+            .render_self_closing_tag(&mut self.writer, variant)
+            .map_err(Error::Io)
     }
 
     fn serialize_newtype_struct<T>(self, _name: &'static str, _value: &T) -> Result<()>
@@ -451,6 +453,15 @@ pub trait Formatter {
     {
         writer.write_all(v)
     }
+
+    fn render_self_closing_tag<W>(&mut self, writer: &mut W, tag: &'static str) -> io::Result<()>
+    where
+        W: io::Write,
+    {
+        writer.write_all(b"<")?;
+        writer.write_all(tag.as_bytes())?;
+        writer.write_all(b"/>")
+    }
 }
 
 pub struct CompactFormatter;
@@ -587,7 +598,7 @@ mod tests {
     }
 
     #[test]
-    fn serializes_enums() {
+    fn serializes_repr_enums() {
         #[derive(Serialize_repr)]
         #[repr(u8)]
         enum Color {
@@ -608,6 +619,31 @@ mod tests {
         };
 
         let expected = "<dto><a_color>5</a_color><another_color>7</another_color></dto>";
+        assert_eq!(
+            String::from_utf8(super::to_vec(&test).unwrap()).unwrap(),
+            expected
+        );
+    }
+
+    #[test]
+    fn serializes_enums() {
+        #[derive(Serialize)]
+        #[serde(rename_all = "lowercase")]
+        enum Color {
+            Red
+        }
+
+        #[derive(Serialize)]
+        #[serde(rename = "dto")]
+        struct Dto {
+            color: Color,
+        }
+
+        let test = Dto {
+            color: Color::Red,
+        };
+
+        let expected = "<dto><red/></dto>";
         assert_eq!(
             String::from_utf8(super::to_vec(&test).unwrap()).unwrap(),
             expected
