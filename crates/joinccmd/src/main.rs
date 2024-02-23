@@ -78,6 +78,15 @@ enum CliCommand {
         #[arg(default_value = "0")]
         duration: f64,
     },
+    /// Set network mode for given duration
+    SetNetworkMode {
+        /// The mode to run
+        #[arg(value_enum)]
+        mode: SupportedRunMode,
+        /// The duration this mode to be set
+        #[arg(default_value = "0")]
+        duration: f64,
+    },
     /// Set run mode for given duration
     SetRunMode {
         /// The mode to run
@@ -164,6 +173,7 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
         CliCommand::ReadGlobalPrefsOverride => ReadGlobalPreferencesOverrideCommand::default().execute(connection)?,
         CliCommand::RunBenchmarks => RunBenchmarksCommand::default().execute(connection)?,
         CliCommand::SetGpuMode { mode, duration } => SetGpuModeCommand::new(mode.into(), duration).execute(connection)?,
+        CliCommand::SetNetworkMode { mode, duration } => SetNetworkModeCommand::new(mode.into(), duration).execute(connection)?,
         CliCommand::SetRunMode { mode, duration } => SetRunModeCommand::new(mode.into(), duration).execute(connection)?,
         CliCommand::Version => panic!("Should've never reached this line"),
     };
