@@ -1,6 +1,7 @@
 use crate::error::{Error, Result};
 use crate::rpc::connection::Connection;
 use crate::types::*;
+use crate::defs::*;
 use libjoincserde::{from_str, to_vec};
 use serde::{Deserialize, Serialize};
 
@@ -366,6 +367,29 @@ impl Command<()> for RunBenchmarksCommand {
 pub struct QuitCommand {}
 
 impl Command<()> for QuitCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<()> {
+        let _: SuccessReply = execute_rpc_operation(connection, self)?;
+        Ok(())
+    }
+}
+
+// ----- SetRunModeCommand -----
+
+#[derive(Default, Serialize)]
+#[serde(rename(serialize = "set_run_mode"))]
+pub struct SetRunModeCommand {
+    mode: RunMode,
+    duration: f64,
+}
+
+impl SetRunModeCommand {
+    pub fn new(mode: RunMode, duration: f64) -> Self {
+        assert!(mode != RunMode::UnknownToJoinc);
+        Self { mode, duration }
+    }
+}
+
+impl Command<()> for SetRunModeCommand {
     fn execute(&mut self, connection: &mut Connection) -> Result<()> {
         let _: SuccessReply = execute_rpc_operation(connection, self)?;
         Ok(())

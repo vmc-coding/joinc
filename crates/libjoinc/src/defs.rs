@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_repr::Deserialize_repr;
 use std::fmt::{self, Display};
 
@@ -182,7 +182,8 @@ impl Display for RpcReason {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, Deserialize_repr, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, Deserialize_repr, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "lowercase")]
 #[repr(i8)]
 pub enum RunMode {
     Always = 1,
@@ -191,6 +192,7 @@ pub enum RunMode {
     Restore,
     #[default]
     #[serde(other)]
+    #[serde(skip_serializing)]
     UnknownToJoinc = -1
 }
 
