@@ -233,7 +233,7 @@ where
     }
 
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {
-        unimplemented!()
+        Ok(self)
     }
 
     fn serialize_struct(self, name: &'static str, _len: usize) -> Result<Self::SerializeStruct> {
@@ -339,6 +339,7 @@ where
     }
 }
 
+// This doesn't really render a map, we're using when flattening struct variants into some dto
 impl<'a, W, F> ser::SerializeMap for &'a mut Serializer<W, F>
 where
     W: io::Write,
@@ -351,18 +352,18 @@ where
     where
         T: ?Sized + Serialize,
     {
-        unimplemented!()
+        Ok(())
     }
 
-    fn serialize_value<T>(&mut self, _value: &T) -> Result<()>
+    fn serialize_value<T>(&mut self, value: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
     {
-        unimplemented!()
+        value.serialize(&mut **self)
     }
 
     fn end(self) -> Result<()> {
-        unimplemented!()
+        Ok(())
     }
 }
 
@@ -663,12 +664,35 @@ mod tests {
     #[test]
     fn serializes_struct_variants() {
         #[derive(Serialize)]
-        pub enum Op {
+        enum Op {
             #[serde(rename(serialize = "do_foo"))]
             Foo { a: String, b: i32 }
         }
 
         let test = Op::Foo { a: "foo.bar".to_string(), b: 123 };
+        let expected = "<do_foo><a>foo.bar</a><b>123</b></do_foo>";
+
+        assert_eq!(
+            String::from_utf8(super::to_vec(&test).unwrap()).unwrap(),
+            expected
+        );
+    }
+
+    #[test]
+    fn serializes_struct_variants_as_dto() {
+        #[derive(Serialize)]
+        enum Op {
+            #[serde(rename(serialize = "do_foo"))]
+            Foo { a: String, b: i32 }
+        }
+
+        #[derive(Serialize)]
+        struct Dto {
+            #[serde(flatten)]
+            dummy: Op,
+        }
+
+        let test = Dto { dummy: Op::Foo { a: "foo.bar".to_string(), b: 123 } };
         let expected = "<do_foo><a>foo.bar</a><b>123</b></do_foo>";
 
         assert_eq!(
