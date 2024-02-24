@@ -118,6 +118,19 @@ impl Display for NetworkStatus {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub enum ProjectOp {
+    Allowmorework,
+    Detach,
+    DetachWhenDone,
+    DontDetachWhenDone,
+    Nomorework,
+    Reset,
+    Resume,
+    Suspend,
+    Update,
+}
+
 #[derive(Clone, Copy, Debug, Default, Deserialize_repr, PartialEq, Eq)]
 #[repr(i8)]
 pub enum ResultClientState {

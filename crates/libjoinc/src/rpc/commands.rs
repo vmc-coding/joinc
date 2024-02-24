@@ -321,6 +321,61 @@ impl Command<()> for NetworkAvailableCommand {
     }
 }
 
+// ----- ProjectOpCommand -----
+
+#[derive(Serialize)]
+enum ProjectOpDto {
+    #[serde(rename(serialize = "project_allowmorework"))]
+    Allowmorework { project_url: String },
+    #[serde(rename(serialize = "project_detach"))]
+    Detach { project_url: String },
+    #[serde(rename(serialize = "project_detach_when_done"))]
+    DetachWhenDone { project_url: String },
+    #[serde(rename(serialize = "project_dont_detach_when_done"))]
+    DontDetachWhenDone { project_url: String },
+    #[serde(rename(serialize = "project_nomorework"))]
+    Nomorework { project_url: String },
+    #[serde(rename(serialize = "project_reset"))]
+    Reset { project_url: String },
+    #[serde(rename(serialize = "project_resume"))]
+    Resume { project_url: String },
+    #[serde(rename(serialize = "project_suspend"))]
+    Suspend { project_url: String },
+    #[serde(rename(serialize = "project_update"))]
+    Update { project_url: String },
+}
+
+#[derive(Serialize)]
+pub struct ProjectOpCommand {
+    #[serde(flatten)]
+    dto: ProjectOpDto,
+}
+
+impl ProjectOpCommand {
+    pub fn new(project_url: String, op: ProjectOp) -> Self {
+        Self {
+            dto: match op {
+                ProjectOp::Allowmorework => ProjectOpDto::Allowmorework { project_url },
+                ProjectOp::Detach => ProjectOpDto::Detach { project_url },
+                ProjectOp::DetachWhenDone => ProjectOpDto::DetachWhenDone { project_url },
+                ProjectOp::DontDetachWhenDone => ProjectOpDto::DontDetachWhenDone { project_url },
+                ProjectOp::Nomorework => ProjectOpDto::Nomorework { project_url },
+                ProjectOp::Reset => ProjectOpDto::Reset { project_url },
+                ProjectOp::Resume => ProjectOpDto::Resume { project_url },
+                ProjectOp::Suspend => ProjectOpDto::Suspend { project_url },
+                ProjectOp::Update => ProjectOpDto::Update { project_url },
+            }
+        }
+    }
+}
+
+impl Command<()> for ProjectOpCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<()> {
+        let _: SuccessReply = execute_rpc_operation(connection, self)?;
+        Ok(())
+    }
+}
+
 // ----- ReadCCConfigCommand -----
 
 #[derive(Default, Serialize)]
@@ -484,6 +539,16 @@ impl Command<()> for TaskOpCommand {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn serializes_project_op_command() {
+        let subject = ProjectOpCommand::new("foo.bar".to_string(), ProjectOp::Resume);
+        let expected = "<project_resume><project_url>foo.bar</project_url></project_resume>";
+        assert_eq!(
+            String::from_utf8(super::to_vec(&subject).unwrap()).unwrap(),
+            expected
+        );
+    }
 
     #[test]
     fn serializes_task_op_command() {
