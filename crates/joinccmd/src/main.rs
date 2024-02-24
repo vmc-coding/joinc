@@ -54,6 +54,7 @@ enum CliCommand {
     #[command(visible_alias = "get-project-status")]
     GetProjects,
     /// Show tasks
+    #[command(visible_alias = "get-results")]
     GetTasks {
         /// Show only active tasks
         #[arg(long)]
@@ -96,7 +97,20 @@ enum CliCommand {
         #[arg(default_value = "0")]
         duration: f64,
     },
-    /// Show the verion of this cli
+    /// Execute an operation a task
+    #[command(visible_alias = "task")]
+    #[command(visible_alias = "result-op")]
+    #[command(visible_alias = "result")]
+    TaskOp {
+        /// The task's project url
+        project_url: String,
+        /// The task's name
+        name: String,
+        /// The operation to execute
+        #[arg(value_enum)]
+        op: SupportedTaskOp,
+    },
+    /// Show the version of this cli
     Version,
 }
 
@@ -175,7 +189,8 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
         CliCommand::SetGpuMode { mode, duration } => SetGpuModeCommand::new(mode.into(), duration).execute(connection)?,
         CliCommand::SetNetworkMode { mode, duration } => SetNetworkModeCommand::new(mode.into(), duration).execute(connection)?,
         CliCommand::SetRunMode { mode, duration } => SetRunModeCommand::new(mode.into(), duration).execute(connection)?,
-        CliCommand::Version => panic!("Should've never reached this line"),
+        CliCommand::TaskOp { project_url, name, op } => TaskOpCommand::new(project_url, name, op.into()).execute(connection)?,
+        CliCommand::Version => panic!("Should've never reached this branch"),
     };
 
     Ok(())
@@ -196,6 +211,23 @@ impl From<SupportedRunMode> for RunMode {
             SupportedRunMode::Always => RunMode::Always,
             SupportedRunMode::Auto => RunMode::Auto,
             SupportedRunMode::Never => RunMode::Never,
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, ValueEnum)]
+enum SupportedTaskOp {
+    Abort,
+    Resume,
+    Suspend
+}
+
+impl From<SupportedTaskOp> for TaskOp {
+    fn from(op: SupportedTaskOp) -> Self {
+        match op {
+            SupportedTaskOp::Abort => TaskOp::Abort,
+            SupportedTaskOp::Resume => TaskOp::Resume,
+            SupportedTaskOp::Suspend => TaskOp::Suspend,
         }
     }
 }
