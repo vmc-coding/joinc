@@ -248,10 +248,14 @@ where
         self,
         _name: &'static str,
         _variant_index: u32,
-        _variant: &'static str,
+        variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant> {
-        unimplemented!()
+        self.tags.push(variant);
+        self.formatter
+            .render_opening_struct_tag(&mut self.writer, variant)
+            .map_err(Error::Io)?;
+        Ok(self)
     }
 }
 
@@ -396,15 +400,21 @@ where
     type Ok = ();
     type Error = Error;
 
-    fn serialize_field<T>(&mut self, _key: &'static str, _value: &T) -> Result<()>
+    fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
     {
-        unimplemented!()
+        self.tags.push(key);
+        value.serialize(&mut **self)?;
+        self.tags.pop();
+        Ok(())
     }
 
     fn end(self) -> Result<()> {
-        unimplemented!()
+        let tag = self.tags.pop().ok_or(Error::IllegalState)?;
+        self.formatter
+            .render_closing_struct_tag(&mut self.writer, tag)
+            .map_err(Error::Io)
     }
 }
 
@@ -644,6 +654,23 @@ mod tests {
         };
 
         let expected = "<dto><red/></dto>";
+        assert_eq!(
+            String::from_utf8(super::to_vec(&test).unwrap()).unwrap(),
+            expected
+        );
+    }
+
+    #[test]
+    fn serializes_struct_variants() {
+        #[derive(Serialize)]
+        pub enum Op {
+            #[serde(rename(serialize = "do_foo"))]
+            Foo { a: String, b: i32 }
+        }
+
+        let test = Op::Foo { a: "foo.bar".to_string(), b: 123 };
+        let expected = "<do_foo><a>foo.bar</a><b>123</b></do_foo>";
+
         assert_eq!(
             String::from_utf8(super::to_vec(&test).unwrap()).unwrap(),
             expected
