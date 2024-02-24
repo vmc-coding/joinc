@@ -62,6 +62,15 @@ enum CliCommand {
     },
     /// Retry deferred network communication
     NetworkAvailable,
+    /// Execute an operation on a project
+    #[command(visible_alias = "project")]
+    ProjectOp {
+        /// The project's url
+        project_url: String,
+        /// The operation to execute
+        #[arg(value_enum)]
+        op: SupportedProjectOp,
+    },
     /// Tell the client to quit
     Quit,
     /// Read the cc_config.xml file
@@ -182,6 +191,7 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
             }
         }
         CliCommand::NetworkAvailable => NetworkAvailableCommand::default().execute(connection)?,
+        CliCommand::ProjectOp { project_url, op } => ProjectOpCommand::new(project_url, op.into()).execute(connection)?,
         CliCommand::Quit => QuitCommand::default().execute(connection)?,
         CliCommand::ReadCcConfig => ReadCCConfigCommand::default().execute(connection)?,
         CliCommand::ReadGlobalPrefsOverride => ReadGlobalPreferencesOverrideCommand::default().execute(connection)?,
@@ -197,6 +207,35 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
 }
 
 // ----- helpers for parsing cli parameters -----
+
+#[derive(Clone, PartialEq, ValueEnum)]
+enum SupportedProjectOp {
+    Allowmorework,
+    Detach,
+    DetachWhenDone,
+    DontDetachWhenDone,
+    Nomorework,
+    Reset,
+    Resume,
+    Suspend,
+    Update,
+}
+
+impl From<SupportedProjectOp> for ProjectOp {
+    fn from(op: SupportedProjectOp) -> Self {
+        match op {
+            SupportedProjectOp::Allowmorework => ProjectOp::Allowmorework,
+            SupportedProjectOp::Detach => ProjectOp::Detach,
+            SupportedProjectOp::DetachWhenDone => ProjectOp::DetachWhenDone,
+            SupportedProjectOp::DontDetachWhenDone => ProjectOp::DontDetachWhenDone,
+            SupportedProjectOp::Nomorework => ProjectOp::Nomorework,
+            SupportedProjectOp::Reset => ProjectOp::Reset,
+            SupportedProjectOp::Resume => ProjectOp::Resume,
+            SupportedProjectOp::Suspend => ProjectOp::Suspend,
+            SupportedProjectOp::Update => ProjectOp::Update,
+        }
+    }
+}
 
 #[derive(Clone, PartialEq, ValueEnum)]
 enum SupportedRunMode {
