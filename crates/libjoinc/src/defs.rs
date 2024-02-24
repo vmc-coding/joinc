@@ -72,6 +72,12 @@ impl Display for ActiveTaskState {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub enum FileTransferOp {
+    Abort,
+    Retry,
+}
+
 #[derive(Clone, Copy, Debug, Default, Deserialize_repr, PartialEq, Eq)]
 #[repr(i8)]
 pub enum MsgInfo {

@@ -153,6 +153,40 @@ impl Command<Version> for ExchangeVersionsCommand {
     }
 }
 
+// ----- FileTransferOpCommand -----
+
+#[derive(Serialize)]
+enum FileTransferOpDto {
+    #[serde(rename(serialize = "abort_file_transfer"))]
+    Abort { project_url: String, filename: String },
+    #[serde(rename(serialize = "retry_file_transfer"))]
+    Retry { project_url: String, filename: String },
+}
+
+#[derive(Serialize)]
+pub struct FileTransferOpCommand {
+    #[serde(flatten)]
+    dto: FileTransferOpDto,
+}
+
+impl FileTransferOpCommand {
+    pub fn new(project_url: String, filename: String, op: FileTransferOp) -> Self {
+        Self {
+            dto: match op {
+                FileTransferOp::Abort => FileTransferOpDto::Abort { project_url, filename },
+                FileTransferOp::Retry => FileTransferOpDto::Retry { project_url, filename },
+            }
+        }
+    }
+}
+
+impl Command<()> for FileTransferOpCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<()> {
+        let _: SuccessReply = execute_rpc_operation(connection, self)?;
+        Ok(())
+    }
+}
+
 // ----- GetCCStatusCommand -----
 
 #[derive(Default, Deserialize, Serialize)]
@@ -539,6 +573,16 @@ impl Command<()> for TaskOpCommand {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn serializes_file_transfer_op_command() {
+        let subject = FileTransferOpCommand::new("foo.bar".to_string(), "Some file transfer".to_string(), FileTransferOp::Retry);
+        let expected = "<retry_file_transfer><project_url>foo.bar</project_url><filename>Some file transfer</filename></retry_file_transfer>";
+        assert_eq!(
+            String::from_utf8(super::to_vec(&subject).unwrap()).unwrap(),
+            expected
+        );
+    }
 
     #[test]
     fn serializes_project_op_command() {
