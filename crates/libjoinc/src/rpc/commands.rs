@@ -441,3 +441,58 @@ impl Command<()> for SetRunModeCommand {
         Ok(())
     }
 }
+
+// ----- TaskOpCommand -----
+
+#[derive(Serialize)]
+enum TaskOpDto {
+    #[serde(rename(serialize = "abort_result"))]
+    Abort { project_url: String, name: String },
+    #[serde(rename(serialize = "resume_result"))]
+    Resume { project_url: String, name: String },
+    #[serde(rename(serialize = "suspend_result"))]
+    Suspend { project_url: String, name: String },
+}
+
+#[derive(Serialize)]
+pub struct TaskOpCommand {
+    #[serde(flatten)]
+    dto: TaskOpDto,
+}
+
+impl TaskOpCommand {
+    pub fn new(project_url: String, name: String, op: TaskOp) -> Self {
+        Self {
+            dto: match op {
+                TaskOp::Abort => TaskOpDto::Abort { project_url, name },
+                TaskOp::Resume => TaskOpDto::Resume { project_url, name },
+                TaskOp::Suspend => TaskOpDto::Suspend { project_url, name },
+            }
+        }
+    }
+}
+
+impl Command<()> for TaskOpCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<()> {
+        let _: SuccessReply = execute_rpc_operation(connection, self)?;
+        Ok(())
+    }
+}
+
+// ----- Tests -----
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn serializes_task_op_command() {
+        let subject = TaskOpCommand::new("foo.bar".to_string(), "Some task".to_string(), TaskOp::Abort);
+        let expected = "<abort_result><project_url>foo.bar</project_url><name>Some task</name></abort_result>";
+        assert_eq!(
+            String::from_utf8(super::to_vec(&subject).unwrap()).unwrap(),
+            expected
+        );
+    }
+
+}

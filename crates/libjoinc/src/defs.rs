@@ -281,6 +281,14 @@ impl Display for SuspendReason {
         })
     }
 }
+
+#[derive(Clone, Copy, Debug)]
+pub enum TaskOp {
+    Abort,
+    Resume,
+    Suspend,
+}
+
 // ----- deserialization helper -----
 
 #[derive(Deserialize, Debug, PartialEq, Eq)]
