@@ -34,6 +34,17 @@ struct Cli {
 enum CliCommand {
     /// Show client version
     ClientVersion,
+    /// Execute an operation on a file transfer
+    #[command(visible_alias = "file-transfer")]
+    FileTransferOp {
+        /// The transfer's project url
+        project_url: String,
+        /// The transfers's filename
+        filename: String,
+        /// The operation to execute
+        #[arg(value_enum)]
+        op: SupportedFileTransferOp,
+    },
     /// Show cc status
     GetCCStatus,
     /// Show file transfers
@@ -156,6 +167,7 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
         CliCommand::ClientVersion => {
             println!("Client version: {}", ExchangeVersionsCommand::default().execute(connection)?.display());
         }
+        CliCommand::FileTransferOp { project_url, filename, op } => FileTransferOpCommand::new(project_url, filename, op.into()).execute(connection)?,
         CliCommand::GetCCStatus => {
             print!("{}", GetCCStatusCommand::default().execute(connection)?.display());
         }
@@ -207,6 +219,21 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
 }
 
 // ----- helpers for parsing cli parameters -----
+
+#[derive(Clone, PartialEq, ValueEnum)]
+enum SupportedFileTransferOp {
+    Abort,
+    Retry,
+}
+
+impl From<SupportedFileTransferOp> for FileTransferOp {
+    fn from(op: SupportedFileTransferOp) -> Self {
+        match op {
+            SupportedFileTransferOp::Abort => FileTransferOp::Abort,
+            SupportedFileTransferOp::Retry => FileTransferOp::Retry,
+        }
+    }
+}
 
 #[derive(Clone, PartialEq, ValueEnum)]
 enum SupportedProjectOp {
