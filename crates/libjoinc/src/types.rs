@@ -146,6 +146,36 @@ impl From<GuiUrlsDto> for GuiUrls {
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
+pub struct HostInfo {
+    pub p_vm_extensions_disabled: Bool,
+    pub wsl_available: Bool,
+
+    pub d_free: f64,
+    pub d_total: f64,
+    pub m_cache: f64,
+    pub m_nbytes: f64,
+    pub m_swap: f64,
+    pub p_calculated: f64,
+    pub p_fpops: f64,
+    pub p_iops: f64,
+    pub p_membw: f64,
+
+    pub n_usable_coprocs: i32,
+    pub p_ncpus: i32,
+    pub timezone: i32,
+
+    pub domain_name: String,
+    pub host_cpid: String,
+    pub ip_addr: String,
+    pub os_name: String,
+    pub os_version: String,
+    pub p_features: String,
+    pub p_model: String,
+    pub p_vendor: String,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
 pub struct Message {
     pub body: String,
     #[serde(rename = "pri")]

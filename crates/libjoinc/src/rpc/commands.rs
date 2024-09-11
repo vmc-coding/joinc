@@ -219,6 +219,22 @@ impl Command<DiskUsageSummary> for GetDiskUsageSummaryCommand {
     }
 }
 
+// ----- GetHostInfoCommand -----
+
+#[derive(Default, Deserialize, Serialize)]
+#[serde(rename(serialize = "get_host_info"))]
+pub struct GetHostInfoCommand {
+    #[serde(skip_serializing)]
+    host_info: HostInfo,
+}
+
+impl Command<HostInfo> for GetHostInfoCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<HostInfo> {
+        let response: Self = execute_rpc_operation(connection, self)?;
+        Ok(response.host_info)
+    }
+}
+
 // ----- GetFileTransfersCommand -----
 
 #[derive(Default, Deserialize)]
