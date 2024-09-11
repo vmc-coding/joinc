@@ -47,6 +47,8 @@ enum CliCommand {
     },
     /// Show cc status
     GetCCStatus,
+    /// Show disk usage
+    GetDiskUsage,
     /// Show file transfers
     GetFileTransfers,
     /// Show messages
@@ -170,6 +172,10 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
         CliCommand::FileTransferOp { project_url, filename, op } => FileTransferOpCommand::new(project_url, filename, op.into()).execute(connection)?,
         CliCommand::GetCCStatus => {
             print!("{}", GetCCStatusCommand::default().execute(connection)?.display());
+        }
+        CliCommand::GetDiskUsage => {
+            println!("======== Disk usage ========");
+            print!("{}", GetDiskUsageSummaryCommand::default().execute(connection)?.display());
         }
         CliCommand::GetFileTransfers => {
             println!("======== File transfers ========");
@@ -396,6 +402,21 @@ impl fmt::Display for Displayable<CCStatus> {
                 self.0.gpu_mode, self.0.gpu_mode_delay, self.0.gpu_mode_perm, self.0.gpu_suspend_reason))?;
         write!(f, "{}", FormattedCCState("Network",
                 self.0.network_mode, self.0.network_mode_delay, self.0.network_mode_perm, self.0.network_suspend_reason))?;
+        Ok(())
+    }
+}
+
+impl fmt::Display for Displayable<DiskUsageSummary> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "total: {}", Usage(self.0.total))?;
+        writeln!(f, "free: {}", Usage(self.0.free))?;
+
+        for (idx, project) in self.0.projects.iter().enumerate() {
+            writeln!(f, "{}) -----------", idx + 1)?;
+            writeln!(f, "{INDENT3}master URL: {}", project.master_url)?;
+            writeln!(f, "{INDENT3}disk usage: {}", Usage(project.disk_usage))?;
+        }
+
         Ok(())
     }
 }
