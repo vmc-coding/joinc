@@ -9,6 +9,7 @@ use std::fmt;
 use chrono::prelude::*;
 
 static JOINCCMD_VERSION: &str = env!("CARGO_PKG_VERSION");
+static INDENT2: &str = "  ";
 static INDENT3: &str = "   ";
 static INDENT4: &str = "    ";
 
@@ -49,6 +50,8 @@ enum CliCommand {
     GetCCStatus,
     /// Show disk usage
     GetDiskUsage,
+    /// Show host info
+    GetHostInfo,
     /// Show file transfers
     GetFileTransfers,
     /// Show messages
@@ -169,13 +172,18 @@ fn process_command(connection: &mut connection::Connection, command: CliCommand)
         CliCommand::ClientVersion => {
             println!("Client version: {}", ExchangeVersionsCommand::default().execute(connection)?.display());
         }
-        CliCommand::FileTransferOp { project_url, filename, op } => FileTransferOpCommand::new(project_url, filename, op.into()).execute(connection)?,
+        CliCommand::FileTransferOp { project_url, filename, op } => {
+            FileTransferOpCommand::new(project_url, filename, op.into()).execute(connection)?;
+        }
         CliCommand::GetCCStatus => {
             print!("{}", GetCCStatusCommand::default().execute(connection)?.display());
         }
         CliCommand::GetDiskUsage => {
             println!("======== Disk usage ========");
             print!("{}", GetDiskUsageSummaryCommand::default().execute(connection)?.display());
+        }
+        CliCommand::GetHostInfo => {
+            print!("{}", GetHostInfoCommand::default().execute(connection)?.display());
         }
         CliCommand::GetFileTransfers => {
             println!("======== File transfers ========");
@@ -466,6 +474,28 @@ impl fmt::Display for Displayable<FileTransfer> {
         writeln!(f, "{INDENT3}xfer_speed: {:.6}", xfer_speed)?;
 
         Ok(())
+    }
+}
+
+impl fmt::Display for Displayable<HostInfo> {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+      writeln!(f, "{INDENT2}timezone: {}", self.0.timezone)?;
+      writeln!(f, "{INDENT2}domain name: {}", self.0.domain_name)?;
+      writeln!(f, "{INDENT2}IP addr: {}", self.0.ip_addr)?;
+      writeln!(f, "{INDENT2}#CPUS: {}", self.0.p_ncpus)?;
+      writeln!(f, "{INDENT2}CPU vendor: {}", self.0.p_vendor)?;
+      writeln!(f, "{INDENT2}CPU model: {}", self.0.p_model)?;
+      writeln!(f, "{INDENT2}CPU FP OPS: {:.6}", self.0.p_fpops)?;
+      writeln!(f, "{INDENT2}CPU int OPS: {:.6}", self.0.p_iops)?;
+      writeln!(f, "{INDENT2}CPU mem BW: {:.6}", self.0.p_membw)?;
+      writeln!(f, "{INDENT2}OS name: {}", self.0.os_name)?;
+      writeln!(f, "{INDENT2}OS version: {}", self.0.os_version)?;
+      writeln!(f, "{INDENT2}mem size: {:.6}", self.0.m_nbytes)?;
+      writeln!(f, "{INDENT2}cache size: {:.6}", self.0.m_cache)?;
+      writeln!(f, "{INDENT2}swap size: {:.6}", self.0.m_swap)?;
+      writeln!(f, "{INDENT2}disk size: {:.6}", self.0.d_total)?;
+      writeln!(f, "{INDENT2}disk free: {:.6}", self.0.d_free)?;
+      Ok(())
     }
 }
 
