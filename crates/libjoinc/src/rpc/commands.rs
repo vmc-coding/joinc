@@ -203,6 +203,22 @@ impl Command<CCStatus> for GetCCStatusCommand {
     }
 }
 
+// ----- GetDiskUsageSummaryCommand -----
+
+#[derive(Default, Deserialize, Serialize)]
+#[serde(rename(serialize = "get_disk_usage"))]
+pub struct GetDiskUsageSummaryCommand {
+    #[serde(skip_serializing)]
+    disk_usage_summary: DiskUsageSummary,
+}
+
+impl Command<DiskUsageSummary> for GetDiskUsageSummaryCommand {
+    fn execute(&mut self, connection: &mut Connection) -> Result<DiskUsageSummary> {
+        let response: Self = execute_rpc_operation(connection, self)?;
+        Ok(response.disk_usage_summary)
+    }
+}
+
 // ----- GetFileTransfersCommand -----
 
 #[derive(Default, Deserialize)]

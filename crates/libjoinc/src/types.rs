@@ -55,6 +55,28 @@ pub struct CCStatus {
     pub network_status: NetworkStatus,
 }
 
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+pub struct DiskUsageSummary {
+    #[serde(rename = "d_allowed")]
+    pub allowed: f64,
+    #[serde(rename = "d_boinc")]
+    pub boinc: f64,
+    #[serde(rename = "d_free")]
+    pub free: f64,
+    #[serde(rename = "d_total")]
+    pub total: f64,
+    #[serde(rename = "project")]
+    pub projects: Vec<DiskUsageSummaryProject>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+pub struct DiskUsageSummaryProject {
+    pub disk_usage: f64,
+    pub master_url: String,
+}
+
 #[derive(Copy, Clone, Debug, Default, Deserialize)]
 #[serde(default)]
 #[serde(transparent)]
