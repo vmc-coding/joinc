@@ -318,6 +318,10 @@ fn to_mibi(d: f64) -> f64 {
     d / (1024. * 1024.)
 }
 
+fn to_gflops(f: f64) -> f64 {
+    f / 1e9
+}
+
 // ----- helpers for displaying -----
 
 struct Displayable<T>(T);
@@ -477,6 +481,27 @@ impl fmt::Display for Displayable<FileTransfer> {
     }
 }
 
+impl fmt::Display for Displayable<&Coprocs> {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+      for (index, coproc) in self.0.amds.iter().enumerate() {
+          writeln!(f, "{INDENT2}AMD GPU: {} (CAL version {}, {}MB, {:.0}MB available, {:.0} GFLOPS peak)",
+              coproc.name, coproc.version, coproc.local_ram, to_mibi(coproc.available_ram), to_gflops(coproc.peak_flops))?;
+
+          if coproc.count > 1 {
+              writeln!(f, "{INDENT4}Count: {}", coproc.count)?;
+          }
+
+          if let Some(opencl) = &coproc.opencl {
+              writeln!(f, "{INDENT4}OpenCL: AMD {}: {:.64} (driver version {:.64}, device version {:.64}, {:.0}MB, {:.0}MB available, {:.0} GFLOPS peak)",
+                  index, opencl.name, opencl.opencl_driver_version, opencl.opencl_device_version.trim(),
+                  to_mibi(opencl.global_mem_size), to_mibi(coproc.available_ram), to_gflops(coproc.peak_flops))?;
+          }
+      }
+
+      Ok(())
+  }
+}
+
 impl fmt::Display for Displayable<HostInfo> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
       writeln!(f, "{INDENT2}timezone: {}", self.0.timezone)?;
@@ -495,6 +520,7 @@ impl fmt::Display for Displayable<HostInfo> {
       writeln!(f, "{INDENT2}swap size: {:.6}", self.0.m_swap)?;
       writeln!(f, "{INDENT2}disk size: {:.6}", self.0.d_total)?;
       writeln!(f, "{INDENT2}disk free: {:.6}", self.0.d_free)?;
+      write!(f, "{}", (&self.0.coprocs).display())?;
       Ok(())
     }
 }

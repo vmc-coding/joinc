@@ -57,6 +57,43 @@ pub struct CCStatus {
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
+pub struct CoprocAMD {
+    pub count: i32,
+
+    #[serde(rename="localRAM")]
+    pub local_ram: u32,
+
+    pub available_ram: f64,
+    pub peak_flops: f64,
+
+    pub name: String,
+    #[serde(rename="CALVersion")]
+    pub version: String,
+
+    #[serde(rename="coproc_opencl")]
+    pub opencl: Option<CoprocOpenCL>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+pub struct CoprocOpenCL {
+    pub name: String,
+    pub opencl_device_version: String,
+    pub opencl_driver_version: String,
+
+    pub global_mem_size: f64,
+}
+
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+pub struct Coprocs {
+    #[serde(rename="coproc_ati")]
+    pub amds: Vec<CoprocAMD>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
 pub struct DiskUsageSummary {
     #[serde(rename = "d_allowed")]
     pub allowed: f64,
@@ -172,6 +209,8 @@ pub struct HostInfo {
     pub p_features: String,
     pub p_model: String,
     pub p_vendor: String,
+
+    pub coprocs: Coprocs,
 }
 
 #[derive(Debug, Default, Deserialize)]
