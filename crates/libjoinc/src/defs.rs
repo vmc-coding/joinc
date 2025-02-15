@@ -19,7 +19,7 @@ impl From<Bool> for bool {
 impl From<bool> for Bool {
     fn from(b: bool) -> Self {
         match b {
-            false => Bool::True,
+            false => Bool::False,
             true => Bool::True,
         }
     }
