@@ -6,6 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-quick-xml = { version = "0.31.0", features = ["serialize", "overlapped-lists"] }
+quick-xml = { version = "0.38.0", features = ["serialize", "overlapped-lists"] }
 serde = { version = "1.0.196", features = ["derive"] }
 serde_repr = "0.1.18"
