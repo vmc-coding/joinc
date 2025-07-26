@@ -368,9 +368,8 @@ impl fmt::Display for FormattedTimestamp {
         write!(f, "{}",
             &Some(self.timestamp.0)
                 .filter(|&t| t > 0.)
-                .and_then(|t| NaiveDateTime::from_timestamp_opt(t as i64, 0))
-                .map(|ndt| Local
-                    .from_utc_datetime(&ndt)
+                .and_then(|t| DateTime::from_timestamp(t as i64, 0))
+                .map(|dt| dt
                     .with_timezone(&Local)
                     .format(self.format)
                     .to_string())
